@@ -13,6 +13,8 @@ class loginScreenState extends State<loginScreen>{
   Widget build(BuildContext context) {
     // TODO: implement build
     throw Scaffold(
+      appBar: AppBar(),
+      body: Container(),
 
     );
   }
