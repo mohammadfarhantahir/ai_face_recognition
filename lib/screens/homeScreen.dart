@@ -63,11 +63,12 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
               ), //UserAccountDrawerHeader
             ), //DrawerHeader
             ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text(' My Profile '),
+              leading: const Icon(CupertinoIcons.settings),
+              title: const Text(' Configure URL '),
               onTap: () {
                 wifistatus = true;
                 Navigator.pop(context);
+                showAlertDialogForURL(context);
               },
             ),
 
@@ -396,5 +397,163 @@ Widget _buildneumorphism(double radius){
 
 
     ),
+  );
+}
+
+TextEditingController urlController = TextEditingController();
+showAlertDialogForURL(BuildContext context) {
+
+  // textfield for url
+  // set up the buttons
+  Widget cancelButton = TextButton(
+    child: Text("Cancel",style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.white)),
+    onPressed:  () {
+      Navigator.pop(context);
+    },
+  );
+  Widget continueButton = TextButton(
+    child: Text("Continue",style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.white)),
+    onPressed:  () {
+      print('continue of alert clicked');
+    },
+  );
+
+
+  // set up the AlertDialog
+  AlertDialog alert = AlertDialog(
+    backgroundColor: Colors.black,
+    title: Text("Configure URL",style: GoogleFonts.didactGothic(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
+    content: Text("Please Enter i.p of OFFLINE server/system.",style: GoogleFonts.didactGothic(fontSize: 18,fontWeight: FontWeight.bold,color: Colors.white,),),
+    actions: [
+      Column(
+        mainAxisSize: MainAxisSize.max,
+
+        children: [
+          Container(
+
+            width: MediaQuery.of(context).size.width/1.2,
+            height: 70,
+            padding: EdgeInsets.all(8),
+            child: Center(
+              child:  Padding(
+                padding: EdgeInsets.all(10),
+                child: TextField(
+                  style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.white),
+                  keyboardType: TextInputType.numberWithOptions(),
+                  controller: urlController,
+                  decoration: InputDecoration(
+
+                    border: InputBorder.none,
+                    labelText: 'url',
+                  ),
+                  onChanged: (text) {
+
+                  },
+                ),
+              )
+            ),
+            decoration: BoxDecoration(
+                color: Color(0xFF000000),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  const BoxShadow(
+                    color: Color(0xFFffffff),
+                    offset: Offset(2, 2),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                  ),
+                  const BoxShadow(
+                    color: Color(0xFFffffff),
+                    offset: Offset(-2, -2),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                  ),
+                ]
+            ),
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Expanded(
+                flex: 1,
+                  child: Container(
+                    width: 200,
+                    height: 70,
+                    padding: EdgeInsets.all(8),
+                    child: Center(
+                      child:   cancelButton,
+                    ),
+                    decoration: BoxDecoration(
+                        color: Color(0xFF000000),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          const BoxShadow(
+                            color: Color(0xFFffffff),
+                            offset: Offset(2, 2),
+                            blurRadius: 10,
+                            spreadRadius: 1,
+                          ),
+                          const BoxShadow(
+                            color: Color(0xFFffffff),
+                            offset: Offset(-2, -2),
+                            blurRadius: 10,
+                            spreadRadius: 1,
+                          ),
+                        ]
+                    ),
+                  ),),
+              SizedBox(
+                width: 10,
+              ),
+              Expanded(
+                  child:  Container(
+                    width: 200,
+                    height: 70,
+                    padding: EdgeInsets.all(8),
+                    child: Center(
+                      child: continueButton,
+                    ),
+                    decoration: BoxDecoration(
+                        color: Color(0xFFE000000),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          const BoxShadow(
+                            color: Color(0xFFffffff),
+                            offset: Offset(2, 2),
+                            blurRadius: 10,
+                            spreadRadius: 1,
+                          ),
+                          const BoxShadow(
+                            color: Color(0xFFffffff),
+                            offset: Offset(-2, -2),
+                            blurRadius: 10,
+                            spreadRadius: 1,
+                          ),
+                        ]
+                    ),
+                  ),)
+
+
+
+
+            ],
+          )
+        ],
+      ),
+
+
+
+    ],
+  );
+
+  // show the dialog
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
   );
 }
