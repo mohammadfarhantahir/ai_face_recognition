@@ -1,18 +1,50 @@
 
 
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:io';
 
 import '../utils/curve_wave.dart';
 
 bool wifistatus = false;
+
  AnimationController? _controller;
 class homeScreen extends StatefulWidget{
   State<homeScreen> createState()=> homeScreenState();
 }
 
 class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
+
+   StreamSubscription? periodicSub;
+
+
+
+
+   void _doPinging(){
+     Socket.connect('192.168.1.5', 80, timeout: Duration(seconds: 5)).then((socket){
+
+       setState(() {
+         wifistatus = true;
+
+
+         print("Success");
+       });
+
+
+       socket.destroy();
+     }).catchError((error){
+       setState(() {
+
+         wifistatus = false;
+         print("Exception on Socket "+error.toString());
+
+       });
+
+     });
+   }
 
 
 
@@ -24,10 +56,15 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
       lowerBound: 0.5,
       duration: Duration(seconds: 3),
     )..repeat();
+    periodicSub = new Stream.periodic(const Duration(milliseconds: 500), (v) => v)
+        .take(10)
+        .listen((count) => _doPinging());
   }
   @override
   void dispose() {
     _controller!.dispose();
+    periodicSub!.cancel();
+
     super.dispose();
   }
   @override
@@ -66,7 +103,7 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
               leading: const Icon(CupertinoIcons.settings),
               title: const Text(' Configure URL '),
               onTap: () {
-                wifistatus = true;
+
                 Navigator.pop(context);
                 showAlertDialogForURL(context);
               },
@@ -76,7 +113,7 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
               leading: const Icon(Icons.logout),
               title: const Text('LogOut'),
               onTap: () {
-                wifistatus = false;
+
                 Navigator.pop(context);
               },
             ),
@@ -110,13 +147,13 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                                 _buildneumorphism(220 * _controller!.value),
                                 _buildneumorphism(260 * _controller!.value),
                                 Align(child: wifistatus ? Icon(Icons.wifi, size: 34,color: Colors.white,):
-                                Icon(Icons.wifi, size: 34,color: Colors.black,)
+                                Icon(Icons.wifi_off, size: 34,color: Colors.black,)
                                 ),
                                 Positioned(
                                     top: MediaQuery.of(context).size.height/5,
                                     child:Center(
                                       child: wifistatus ? Text('Connected..',style: GoogleFonts.didactGothic(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.white),):
-                                      Text('Not Connected..',style: GoogleFonts.didactGothic(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.white),),
+                                      Text('Not Connected..',style: GoogleFonts.didactGothic(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.black),),
                                     )
                                 )
 
@@ -414,6 +451,8 @@ showAlertDialogForURL(BuildContext context) {
   Widget continueButton = TextButton(
     child: Text("Continue",style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.white)),
     onPressed:  () {
+    //
+      //  ();
       print('continue of alert clicked');
     },
   );
@@ -443,10 +482,12 @@ showAlertDialogForURL(BuildContext context) {
                   controller: urlController,
                   decoration: InputDecoration(
 
+
                     border: InputBorder.none,
-                    labelText: 'url',
+                    labelText: 'I.p',
                   ),
                   onChanged: (text) {
+
 
                   },
                 ),

@@ -1,4 +1,4 @@
-import 'package:ai_face/screens/loginScreen.dart';
+import 'package:ai_face/screens/main1.dart';
 import 'package:flutter/material.dart';
 
 void main() {
