@@ -16,7 +16,7 @@ class FaceDetectorPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final textStyle =  GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold
+    final textStyle =  GoogleFonts.gruppo(fontSize: 28,color: Colors.black,fontWeight: FontWeight.bold
     );
     final textSpan = TextSpan(
       text: 'Powered by NiGELLA SOFTWARES',

@@ -305,10 +305,13 @@ class _CameraViewState extends State<CameraView> {
               // _navigatetoenrollment(context);
 
             },
-            child: Text('Capture Button will be automatically appeared on the screen once the camera detect HUMAN faces',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)
-            ),
+            child:Padding(
+              padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
+              child:  Text('Capture Button will be automatically appeared on the screen once the camera detect HUMAN faces',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)
+              ),
+            )
           ),
 
 
@@ -456,7 +459,7 @@ class _CameraViewState extends State<CameraView> {
 
   Future _switchLiveCamera() async {
     setState(() => _changingCameraLens = true);
-   // _cameraIndex = (_cameraIndex + 1) % cameras.length;
+    _cameraIndex = (_cameraIndex + 1) % cameras.length;
 
     await _stopLiveFeed();
     await _startLiveFeed();
