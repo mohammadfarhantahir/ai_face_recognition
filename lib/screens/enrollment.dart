@@ -16,6 +16,10 @@ import 'package:ai_face/const/globals.dart' as globals;
 import 'homeScreen.dart';
 XFile? imageFile;
 late File file;
+late String imageFilenew='';
+String _similarity = "nil";
+var image1 = new Regula.MatchFacesImage();
+var image2 = new Regula.MatchFacesImage();
 class enrollment extends StatefulWidget{
 
   State<enrollment> createState() => _enrollmentState();
@@ -65,7 +69,58 @@ class _enrollmentState extends State<enrollment>{
     }
   }
 
+  setImage(bool first, List<int> imageFile, int type) async {
 
+
+    if (imageFile == null) return;
+    setState(() => _similarity = "nil");
+    if (first) {
+      image1.bitmap = base64Encode(imageFile);
+      image1.imageType = type;
+      globals.uint8Listglobal = Uint8List.fromList(imageFile);
+      final tempDir = await getTemporaryDirectory();
+      var rnd = new Random();
+      var next = rnd.nextDouble() * 1000000;
+      while (next < 100000) {
+        next *= 10;
+      }
+      print(next.toInt());
+
+      String valueofrandom= next.toInt().toString();
+      File file12 = await File('${tempDir.path}/'+valueofrandom+'.png').create();
+      file12.writeAsBytesSync(globals.uint8Listglobal!);
+      print('uint8List value------>'+file12.path+'\n'+'======>'+valueofrandom);
+      globals.filepaths = file12.path;
+
+      String base64String = base64Encode(imageFile);
+      String header = "data:image/png;base64,";
+      String complete = header+base64String;
+      print('---------->'+complete+'\n-----'+type.toString());
+
+
+    } else {
+      image2.bitmap = base64Encode(imageFile);
+      image2.imageType = type;
+      //setState(() => img2 =  Image.memory(uint8List));
+    }
+  }
+  late var result;
+  void facecapture(){
+    Regula.FaceSDK.presentFaceCaptureActivity().then((result) =>
+        setImage(
+            globals.first,
+            base64Decode(Regula.FaceCaptureResponse.fromJson(
+                json.decode(result))!
+                .image!
+                .bitmap!
+                .replaceAll("\n", "")),
+            Regula.ImageType.LIVE));
+    imageFilenew= json.decode(result);
+    globals.first=true;
+    print('image value -------'+imageFilenew);
+
+    Navigator.pop(context);
+  }
 
 
 
@@ -98,6 +153,7 @@ class _enrollmentState extends State<enrollment>{
      ),
      body: Center(
          child: SingleChildScrollView(
+
            child: Container(
                margin: const EdgeInsets.all(20),
                child: Column(
@@ -213,7 +269,8 @@ class _enrollmentState extends State<enrollment>{
                          flex: 1,
                          child: GestureDetector(
                            onTap: () {
-
+                             globals.first=true;
+                             facecapture();
                              print('camera clicekd');
                            },
                            child: Container(
@@ -228,7 +285,7 @@ class _enrollmentState extends State<enrollment>{
                                      ),
                                      Expanded(
                                          flex: 1,
-                                         child: Icon(CupertinoIcons.profile_circled,color: Colors.white)),
+                                         child: Icon(CupertinoIcons.camera,color: Colors.white)),
                                      SizedBox(
                                        height: 20,
                                      ),
