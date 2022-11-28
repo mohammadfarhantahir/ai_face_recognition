@@ -46,6 +46,9 @@ dependencies:
   google_mlkit_face_detection:
   toast:
   intl:
+  shared_preferences:
+  connectivity_plus:
+  permission_handler:
 
 dev_dependencies:
   flutter_test:

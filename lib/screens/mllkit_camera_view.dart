@@ -99,7 +99,8 @@ class _CameraViewState extends State<CameraView> {
 
   @override
   void dispose() {
-    // _stopLiveFeed();
+
+     _stopLiveFeed();
     super.dispose();
   }
 
@@ -138,8 +139,10 @@ class _CameraViewState extends State<CameraView> {
       print('uint8List value------>'+file12.path+'\n'+'======>'+valueofrandom);
       globals.filepaths = file12.path;
       globals.mlcamerabool = true;
-      print(globals.uint8Listglobal.toString());
-      print(tmpFile.path);
+     // globals.uint8Listglobal =  Uint8List.fromList(File(file12.path).readAsBytesSync());
+
+      print('new000000000000000---------->'+tmpFile.path);
+      _stopLiveFeed();
       Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => enrollment()));
 
 
@@ -333,8 +336,7 @@ class _CameraViewState extends State<CameraView> {
           shape: RoundedRectangleBorder(borderRadius:BorderRadius.circular(30.0) ),
           splashColor: Colors.cyan,
           onPressed: () async {
-            _controller!.stopImageStream();
-            _stopLiveFeed();
+
 
             takePicture(context);
 
@@ -452,8 +454,8 @@ class _CameraViewState extends State<CameraView> {
   }
 
   Future _stopLiveFeed() async {
-    await _controller?.stopImageStream();
-    await _controller?.dispose();
+    await _controller!.stopImageStream();
+    await _controller!.dispose();
     _controller = null;
   }
 

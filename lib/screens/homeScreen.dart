@@ -2,18 +2,23 @@
 
 import 'dart:async';
 
+
+import 'package:ai_face/screens/verifyFrontcamera.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
+import 'package:ai_face/const/globals.dart' as globals;
 
 import '../utils/curve_wave.dart';
 import 'enrollment.dart';
+import 'verifyBackcamera.dart';
 
 bool wifistatus = false;
-String _ipValue='';
+String connectionStatus='';
 
- AnimationController? _controller;
+AnimationController? _controller;
 class homeScreen extends StatefulWidget{
   State<homeScreen> createState()=> homeScreenState();
 }
@@ -22,6 +27,29 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
 
    StreamSubscription? periodicSub;
 
+
+   // WRITE shared preferences for storing I.P
+   addStringToSF() async {
+     SharedPreferences prefs = await SharedPreferences.getInstance();
+     setState(() {
+       prefs.setString('ipURL', urlController.text);
+     });
+
+   }
+
+
+   // READ shared preferences for getting the value of I.P
+   getStringValuesSF() async {
+     SharedPreferences prefs = await SharedPreferences.getInstance();
+     //Return String
+     globals.readIPURL= prefs.getString('ipURL');
+
+     _doPinging();
+
+
+
+     return globals.readIPURL;
+   }
 
    TextEditingController urlController = TextEditingController();
    showAlertDialogForURL(BuildContext context) {
@@ -38,10 +66,10 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
        child: Text("Continue",style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.white)),
        onPressed:  () {
          setState(() {
-           _ipValue = urlController.text;
+           globals.readIPURL = urlController.text;
            _doPinging();
-           print('ip value is -->'+_ipValue);
-
+           print('ip value is -->'+globals.readIPURL!);
+           addStringToSF();
            //  ();
            print('continue of alert clicked');
            Navigator.pop(context);
@@ -197,16 +225,123 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
 
 
 
+
+   showAlertDialogNOTCONFIGURED(BuildContext context) {
+
+     // textfield for url
+     // set up the buttons
+     Widget cancelButton =  GestureDetector(
+       onTap: () {
+         setState(() {
+           print('OOPS clicked');
+           Navigator.of(context, rootNavigator: true).pop();
+         });
+
+       },
+       child:Container(
+         child: Text("I Understand",style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.white)),
+       ),
+     );
+
+
+     // set up the AlertDialog
+     AlertDialog alert = AlertDialog(
+       backgroundColor: Colors.black,
+       title: Text("Ooops!",style: GoogleFonts.didactGothic(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
+       content: Text("Its seems that you haven\'t configured the I.P yet\nGo to left side menu bar and choose \'CONFIGURE URL\'",style: GoogleFonts.didactGothic(fontSize: 18,fontWeight: FontWeight.bold,color: Colors.white,),),
+       actions: [
+         Column(
+           mainAxisSize: MainAxisSize.max,
+
+           children: [
+
+             SizedBox(
+               height: 20,
+             ),
+             Row(
+               mainAxisAlignment: MainAxisAlignment.end,
+               children: [
+                 Expanded(
+                   flex: 1,
+                   child: Container(
+                     width: 200,
+                     height: 70,
+                     padding: EdgeInsets.all(8),
+                     child: Center(
+                       child:   cancelButton,
+                     ),
+                     decoration: BoxDecoration(
+                         color: Color(0xFF000000),
+                         borderRadius: BorderRadius.circular(20),
+                         boxShadow: [
+                           const BoxShadow(
+                             color: Color(0xFFffffff),
+                             offset: Offset(2, 2),
+                             blurRadius: 10,
+                             spreadRadius: 1,
+                           ),
+                           const BoxShadow(
+                             color: Color(0xFFffffff),
+                             offset: Offset(-2, -2),
+                             blurRadius: 10,
+                             spreadRadius: 1,
+                           ),
+                         ]
+                     ),
+                   ),),
+                 SizedBox(
+                   width: 10,
+                 ),
+
+
+
+
+               ],
+             )
+           ],
+         ),
+
+
+
+       ],
+     );
+
+     // show the dialog
+     showDialog(
+       context: context,
+       builder: (BuildContext context) {
+         return alert;
+       },
+     );
+   }
+
+
+
+
    void _doPinging(){
-     if(_ipValue.isEmpty){
-       print('didnt configure yet');
+     if(globals.readIPURL==null){
+       print(' shared pref is empty');
+       wifistatus = false;
+       setState(() {
+
+
+         _controller!.dispose();
+         showAlertDialogNOTCONFIGURED(context);
+       });
+
+
 
      }
      else{
-       Socket.connect(_ipValue, 80, timeout: Duration(seconds: 5)).then((socket){
+       Socket.connect(globals.readIPURL, 80, timeout: Duration(seconds: 5)).then((socket){
 
          setState(() {
+
+           print('shared perefence value is--->'+globals.readIPURL!);
            wifistatus = true;
+
+
+           // wifistatus = true;
 
 
            print("Success");
@@ -232,25 +367,45 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
 
   @override
   void initState() {
+
     super.initState();
+
+    getStringValuesSF();
+
+
     _controller = AnimationController(
       vsync: this,
       lowerBound: 0.5,
       duration: Duration(seconds: 3),
     )..repeat();
-    periodicSub = new Stream.periodic(const Duration(milliseconds: 500), (v) => v)
-        .take(10)
-        .listen((count) => _doPinging());
+    if(globals.readIPURL==null){
+
+    }
+    else{
+      _controller = AnimationController(
+        vsync: this,
+        lowerBound: 0.5,
+        duration: Duration(seconds: 3),
+      )..repeat();
+      periodicSub = new Stream.periodic(const Duration(milliseconds: 500), (v) => v)
+          .take(1)
+          .listen((count) =>getStringValuesSF());
+    }
+
+
   }
   @override
   void dispose() {
+
     _controller!.dispose();
     periodicSub!.cancel();
+
 
     super.dispose();
   }
   @override
   Widget build(BuildContext context) {
+
     // TODO: implement build
     return Scaffold(
       appBar: AppBar(
@@ -294,8 +449,11 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('LogOut'),
-              onTap: () {
-
+              onTap: () async {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                //Remove String
+                prefs.remove("ipURL");
+                print('shared preference removed');
                 Navigator.pop(context);
               },
             ),
@@ -429,6 +587,7 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                                       padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
                                       child: GestureDetector(
                                         onTap: () {
+                                          movetofrontcamera(context);
                                           print('Verify front camera clicekd');
                                         },
                                         child: Container(
@@ -494,6 +653,7 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                                       padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
                                       child: GestureDetector(
                                         onTap: () {
+                                          movetobackcamera(context);
                                           print('Back camera clicekd');
                                         },
                                         child: Container(
@@ -663,4 +823,13 @@ Widget _buildneumorphism(double radius){
 
 void movetoenrollment(BuildContext context){
   Navigator.of(context).push(MaterialPageRoute(builder: (context) => enrollment()));
+}
+void movetofrontcamera(BuildContext context){
+  Navigator.of(context).push(MaterialPageRoute(builder: (context) => verifyFrontCamera()));
+
+}
+
+void  movetobackcamera(BuildContext context){
+  Navigator.of(context).push(MaterialPageRoute(builder: (context) => backCamera()));
+
 }
