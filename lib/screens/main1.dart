@@ -33,11 +33,18 @@ class loginScreenState extends State<loginScreen>{
               child:  Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('NiGELLA SOFTWARES\nFace Recognition System',style: GoogleFonts.gruppo(fontSize: 38,color: Colors.white,fontWeight: FontWeight.bold),),
+                FittedBox(
+                fit: BoxFit.fitWidth,
+                child:
+                  Text('NiGELLA SOFTWARES\nFace Recognition System',style: GoogleFonts.gruppo(fontSize: 38,color: Colors.white,fontWeight: FontWeight.bold),
+                  ),),
                   SizedBox(
                     height: 20,
                   ),
-                  Text('Enrolled, Verify, Relax.',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.normal),),
+              FittedBox(
+                fit: BoxFit.fitWidth,
+                child:Text('Enrolled, Verify, Relax.',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.normal),
+                ),),
                   SizedBox(
                     height: 20,
                   ),
@@ -52,7 +59,11 @@ class loginScreenState extends State<loginScreen>{
                       height: 70,
                       padding: EdgeInsets.all(8),
                       child: Center(
-                        child: Text('Login',style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.black),),
+                        child:FittedBox(
+                          fit: BoxFit.fitWidth,
+                          child: Text('Login',style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.black)
+                            ,),
+                        )
                       ),
                       decoration: BoxDecoration(
                           color: Color(0xFFE8E8E9),
@@ -87,7 +98,10 @@ class loginScreenState extends State<loginScreen>{
                       height: 70,
                       padding: EdgeInsets.all(8),
                       child: Center(
-                        child: Text('How to use?',style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.black),),
+                        child:FittedBox(
+                          fit: BoxFit.fitWidth,
+                          child: Text('How to use?',style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.black),),
+                        )
                       ),
                       decoration: BoxDecoration(
                           color: Color(0xFFE8E8E9),

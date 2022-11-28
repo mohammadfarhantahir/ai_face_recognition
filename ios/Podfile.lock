@@ -1,0 +1,57 @@
+PODS:
+  - camera_avfoundation (0.0.1):
+    - Flutter
+  - FaceSDK (4.1.1153):
+    - RegulaCommon (= 6.5.166)
+  - Flutter (1.0.0)
+  - flutter_exif_rotation (0.3.0):
+    - Flutter
+  - flutter_face_api_beta (0.0.75):
+    - FaceSDK (= 4.1.1153)
+    - Flutter
+  - image_picker_ios (0.0.1):
+    - Flutter
+  - path_provider_ios (0.0.1):
+    - Flutter
+  - RegulaCommon (6.5.166)
+
+DEPENDENCIES:
+  - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
+  - Flutter (from `Flutter`)
+  - flutter_exif_rotation (from `.symlinks/plugins/flutter_exif_rotation/ios`)
+  - flutter_face_api_beta (from `.symlinks/plugins/flutter_face_api_beta/ios`)
+  - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
+  - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
+
+SPEC REPOS:
+  trunk:
+    - FaceSDK
+    - RegulaCommon
+
+EXTERNAL SOURCES:
+  camera_avfoundation:
+    :path: ".symlinks/plugins/camera_avfoundation/ios"
+  Flutter:
+    :path: Flutter
+  flutter_exif_rotation:
+    :path: ".symlinks/plugins/flutter_exif_rotation/ios"
+  flutter_face_api_beta:
+    :path: ".symlinks/plugins/flutter_face_api_beta/ios"
+  image_picker_ios:
+    :path: ".symlinks/plugins/image_picker_ios/ios"
+  path_provider_ios:
+    :path: ".symlinks/plugins/path_provider_ios/ios"
+
+SPEC CHECKSUMS:
+  camera_avfoundation: 07c77549ea54ad95d8581be86617c094a46280d9
+  FaceSDK: fafdffe8eeae71acb820c286538152cb3080dea6
+  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+  flutter_exif_rotation: de6b54e8bd54a687f28d6397d1a890391de41111
+  flutter_face_api_beta: beb317161a95916f038548a40c34ccaa8d2df621
+  image_picker_ios: b786a5dcf033a8336a657191401bfdf12017dabb
+  path_provider_ios: 14f3d2fd28c4fdb42f44e0f751d12861c43cee02
+  RegulaCommon: 149b3792b364d5e8fd3b8cc1dfe3d232a495e3cd
+
+PODFILE CHECKSUM: ef19549a9bc3046e7bb7d2fab4d021637c0c58a3
+
+COCOAPODS: 1.11.3

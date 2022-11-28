@@ -31,7 +31,11 @@ class loginScreenState extends State<loginScreenMain>{
         child:  Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Login',style: GoogleFonts.gruppo(fontSize: 38,color: Colors.white,fontWeight: FontWeight.bold),),
+            FittedBox(
+            fit: BoxFit.fitWidth,
+            child:
+            Text('Login',style: GoogleFonts.gruppo(fontSize: 38,color: Colors.white,fontWeight: FontWeight.bold)
+              ,),),
             SizedBox(
               height: 20,
             ),

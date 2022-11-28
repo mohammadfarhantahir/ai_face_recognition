@@ -8,8 +8,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:io';
 
 import '../utils/curve_wave.dart';
+import 'enrollment.dart';
 
 bool wifistatus = false;
+String _ipValue='';
 
  AnimationController? _controller;
 class homeScreen extends StatefulWidget{
@@ -21,29 +23,209 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
    StreamSubscription? periodicSub;
 
 
+   TextEditingController urlController = TextEditingController();
+   showAlertDialogForURL(BuildContext context) {
+
+     // textfield for url
+     // set up the buttons
+     Widget cancelButton = TextButton(
+       child: Text("Cancel",style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.white)),
+       onPressed:  () {
+         Navigator.pop(context);
+       },
+     );
+     Widget continueButton = TextButton(
+       child: Text("Continue",style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.white)),
+       onPressed:  () {
+         setState(() {
+           _ipValue = urlController.text;
+           _doPinging();
+           print('ip value is -->'+_ipValue);
+
+           //  ();
+           print('continue of alert clicked');
+           Navigator.pop(context);
+
+         });
+         //
+
+       },
+     );
+
+
+     // set up the AlertDialog
+     AlertDialog alert = AlertDialog(
+       backgroundColor: Colors.black,
+       title: Text("Configure URL",style: GoogleFonts.didactGothic(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
+       content: Text("Please Enter i.p of OFFLINE server/system.",style: GoogleFonts.didactGothic(fontSize: 18,fontWeight: FontWeight.bold,color: Colors.white,),),
+       actions: [
+         Column(
+           mainAxisSize: MainAxisSize.max,
+
+           children: [
+             Container(
+
+               width: MediaQuery.of(context).size.width/1.2,
+               height: 70,
+               padding: EdgeInsets.all(8),
+               child: Center(
+                   child:  Padding(
+                     padding: EdgeInsets.all(10),
+                     child: TextField(
+                       style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.white),
+                       keyboardType: TextInputType.numberWithOptions(),
+                       controller: urlController,
+                       decoration: InputDecoration(
+
+
+                         border: InputBorder.none,
+                         labelText: 'I.p',
+                       ),
+                       onChanged: (text) {
+
+
+
+                       },
+                     ),
+                   )
+               ),
+               decoration: BoxDecoration(
+                   color: Color(0xFF000000),
+                   borderRadius: BorderRadius.circular(20),
+                   boxShadow: [
+                     const BoxShadow(
+                       color: Color(0xFFffffff),
+                       offset: Offset(2, 2),
+                       blurRadius: 10,
+                       spreadRadius: 1,
+                     ),
+                     const BoxShadow(
+                       color: Color(0xFFffffff),
+                       offset: Offset(-2, -2),
+                       blurRadius: 10,
+                       spreadRadius: 1,
+                     ),
+                   ]
+               ),
+             ),
+             SizedBox(
+               height: 20,
+             ),
+             Row(
+               mainAxisAlignment: MainAxisAlignment.end,
+               children: [
+                 Expanded(
+                   flex: 1,
+                   child: Container(
+                     width: 200,
+                     height: 70,
+                     padding: EdgeInsets.all(8),
+                     child: Center(
+                       child:   cancelButton,
+                     ),
+                     decoration: BoxDecoration(
+                         color: Color(0xFF000000),
+                         borderRadius: BorderRadius.circular(20),
+                         boxShadow: [
+                           const BoxShadow(
+                             color: Color(0xFFffffff),
+                             offset: Offset(2, 2),
+                             blurRadius: 10,
+                             spreadRadius: 1,
+                           ),
+                           const BoxShadow(
+                             color: Color(0xFFffffff),
+                             offset: Offset(-2, -2),
+                             blurRadius: 10,
+                             spreadRadius: 1,
+                           ),
+                         ]
+                     ),
+                   ),),
+                 SizedBox(
+                   width: 10,
+                 ),
+                 Expanded(
+                   child:  Container(
+                     width: 200,
+                     height: 70,
+                     padding: EdgeInsets.all(8),
+                     child: Center(
+                       child: continueButton,
+                     ),
+                     decoration: BoxDecoration(
+                         color: Color(0xFFE000000),
+                         borderRadius: BorderRadius.circular(20),
+                         boxShadow: [
+                           const BoxShadow(
+                             color: Color(0xFFffffff),
+                             offset: Offset(2, 2),
+                             blurRadius: 10,
+                             spreadRadius: 1,
+                           ),
+                           const BoxShadow(
+                             color: Color(0xFFffffff),
+                             offset: Offset(-2, -2),
+                             blurRadius: 10,
+                             spreadRadius: 1,
+                           ),
+                         ]
+                     ),
+                   ),)
+
+
+
+
+               ],
+             )
+           ],
+         ),
+
+
+
+       ],
+     );
+
+     // show the dialog
+     showDialog(
+       context: context,
+       builder: (BuildContext context) {
+         return alert;
+       },
+     );
+   }
+
 
 
    void _doPinging(){
-     Socket.connect('192.168.1.5', 80, timeout: Duration(seconds: 5)).then((socket){
+     if(_ipValue.isEmpty){
+       print('didnt configure yet');
 
-       setState(() {
-         wifistatus = true;
+     }
+     else{
+       Socket.connect(_ipValue, 80, timeout: Duration(seconds: 5)).then((socket){
+
+         setState(() {
+           wifistatus = true;
 
 
-         print("Success");
+           print("Success");
+         });
+
+
+         socket.destroy();
+       }).catchError((error){
+         setState(() {
+
+           wifistatus = false;
+           print("Exception on Socket "+error.toString());
+
+         });
+
        });
 
+     }
 
-       socket.destroy();
-     }).catchError((error){
-       setState(() {
-
-         wifistatus = false;
-         print("Exception on Socket "+error.toString());
-
-       });
-
-     });
    }
 
 
@@ -152,8 +334,15 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                                 Positioned(
                                     top: MediaQuery.of(context).size.height/5,
                                     child:Center(
-                                      child: wifistatus ? Text('Connected..',style: GoogleFonts.didactGothic(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.white),):
-                                      Text('Not Connected..',style: GoogleFonts.didactGothic(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.black),),
+                                      child: wifistatus ? FittedBox(
+                                        fit: BoxFit.fitWidth,
+                                        child:Text('Connected..',style: GoogleFonts.didactGothic(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.white)
+                                          ,)):
+                            FittedBox(
+                            fit: BoxFit.fitWidth,
+                            child:Text('Not Connected..',style: GoogleFonts.didactGothic(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.black),
+                            ),
+                            )
                                     )
                                 )
 
@@ -181,11 +370,12 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                                       padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
                                       child: GestureDetector(
                                         onTap: () {
+                                          movetoenrollment(context);
                                           print('Enrolled clicekd');
                                         },
                                         child: Container(
                                           width: MediaQuery.of(context).size.width/1.2,
-                                          height: 150,
+                                          height: 100,
                                           padding: EdgeInsets.all(8),
                                           child: Center(
                                               child: Row(
@@ -195,7 +385,15 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                                                       child: Icon(CupertinoIcons.profile_circled,color: Colors.white)),
                                                   Expanded(
                                                     flex: 2,
-                                                    child: Text('Enroll Face',style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.white),),)
+                                                    child:Padding(
+                                                      padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
+                                                      child: FittedBox(
+                                                        fit: BoxFit.fitWidth,
+                                                        child: Text('Enroll Face',style: GoogleFonts.didactGothic(color: Colors.white,fontWeight: FontWeight.bold),
+                                                        ),
+                                                      ),
+                                                    )
+                                                  )
                                                 ],
                                               )
                                           ),
@@ -235,7 +433,7 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                                         },
                                         child: Container(
                                           width: MediaQuery.of(context).size.width/1.2,
-                                          height: 150,
+                                          height: 100,
                                           padding: EdgeInsets.all(8),
                                           child: Center(
                                               child: Row(
@@ -245,7 +443,15 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                                                       child: Icon(CupertinoIcons.camera,color: Colors.white,)),
                                                   Expanded(
                                                     flex: 2,
-                                                    child: Text('Verify using front camera',style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.white),),)
+                                                    child:
+                                                    Padding(
+                                                      padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
+                                                      child:  FittedBox(
+                                                        fit: BoxFit.contain,
+                                                        child:Text('Verify using\nFront camera',style: GoogleFonts.didactGothic(color: Colors.white,fontWeight: FontWeight.bold),),
+                                                      ),
+                                                    )
+                                                  )
                                                 ],
                                               )
                                           ),
@@ -292,7 +498,7 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                                         },
                                         child: Container(
                                           width: MediaQuery.of(context).size.width/1.2,
-                                          height: 150,
+                                          height: 100,
                                           padding: EdgeInsets.all(8),
                                           child: Center(
                                               child: Row(
@@ -300,7 +506,17 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                                                   Expanded(child: Icon(CupertinoIcons.camera,color: Colors.white,)),
                                                   Expanded(
                                                     flex: 2,
-                                                    child: Text('Verify using back camera',style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.white),),)
+                                                    child:
+                                                    Padding(
+                                                      padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
+                                                      child:  FittedBox(
+                                                        fit: BoxFit.fitWidth,
+                                                        child:Text('Verify using\nBack camera',style: GoogleFonts.didactGothic(color: Colors.white,fontWeight: FontWeight.bold),
+                                                        )
+                                                        ,),
+                                                    )
+                                                  )
+
                                                 ],
                                               )
                                           ),
@@ -340,7 +556,7 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                                         },
                                         child: Container(
                                           width: MediaQuery.of(context).size.width/1.2,
-                                          height: 150,
+                                          height: 100,
                                           padding: EdgeInsets.all(8),
                                           child: Center(
                                               child:Row(
@@ -350,7 +566,15 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                                                       child:Icon(Icons.info,color: Colors.white,) ),
                                                   Expanded(
                                                     flex: 2,
-                                                    child:  Text('About us',style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.white),),)
+                                                    child:Padding(
+                                                      padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
+                                                      child: FittedBox(
+                                                        fit: BoxFit.fitWidth,
+                                                        child: Text('About Us',style: GoogleFonts.didactGothic(color: Colors.white,fontWeight: FontWeight.bold),
+                                                        ),
+                                                      ),
+                                                    )
+                                                  )
                                                 ],
                                               )
                                           ),
@@ -437,164 +661,6 @@ Widget _buildneumorphism(double radius){
   );
 }
 
-TextEditingController urlController = TextEditingController();
-showAlertDialogForURL(BuildContext context) {
-
-  // textfield for url
-  // set up the buttons
-  Widget cancelButton = TextButton(
-    child: Text("Cancel",style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.white)),
-    onPressed:  () {
-      Navigator.pop(context);
-    },
-  );
-  Widget continueButton = TextButton(
-    child: Text("Continue",style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.white)),
-    onPressed:  () {
-    //
-      //  ();
-      print('continue of alert clicked');
-    },
-  );
-
-
-  // set up the AlertDialog
-  AlertDialog alert = AlertDialog(
-    backgroundColor: Colors.black,
-    title: Text("Configure URL",style: GoogleFonts.didactGothic(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
-    content: Text("Please Enter i.p of OFFLINE server/system.",style: GoogleFonts.didactGothic(fontSize: 18,fontWeight: FontWeight.bold,color: Colors.white,),),
-    actions: [
-      Column(
-        mainAxisSize: MainAxisSize.max,
-
-        children: [
-          Container(
-
-            width: MediaQuery.of(context).size.width/1.2,
-            height: 70,
-            padding: EdgeInsets.all(8),
-            child: Center(
-              child:  Padding(
-                padding: EdgeInsets.all(10),
-                child: TextField(
-                  style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.white),
-                  keyboardType: TextInputType.numberWithOptions(),
-                  controller: urlController,
-                  decoration: InputDecoration(
-
-
-                    border: InputBorder.none,
-                    labelText: 'I.p',
-                  ),
-                  onChanged: (text) {
-
-
-                  },
-                ),
-              )
-            ),
-            decoration: BoxDecoration(
-                color: Color(0xFF000000),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  const BoxShadow(
-                    color: Color(0xFFffffff),
-                    offset: Offset(2, 2),
-                    blurRadius: 10,
-                    spreadRadius: 1,
-                  ),
-                  const BoxShadow(
-                    color: Color(0xFFffffff),
-                    offset: Offset(-2, -2),
-                    blurRadius: 10,
-                    spreadRadius: 1,
-                  ),
-                ]
-            ),
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Expanded(
-                flex: 1,
-                  child: Container(
-                    width: 200,
-                    height: 70,
-                    padding: EdgeInsets.all(8),
-                    child: Center(
-                      child:   cancelButton,
-                    ),
-                    decoration: BoxDecoration(
-                        color: Color(0xFF000000),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          const BoxShadow(
-                            color: Color(0xFFffffff),
-                            offset: Offset(2, 2),
-                            blurRadius: 10,
-                            spreadRadius: 1,
-                          ),
-                          const BoxShadow(
-                            color: Color(0xFFffffff),
-                            offset: Offset(-2, -2),
-                            blurRadius: 10,
-                            spreadRadius: 1,
-                          ),
-                        ]
-                    ),
-                  ),),
-              SizedBox(
-                width: 10,
-              ),
-              Expanded(
-                  child:  Container(
-                    width: 200,
-                    height: 70,
-                    padding: EdgeInsets.all(8),
-                    child: Center(
-                      child: continueButton,
-                    ),
-                    decoration: BoxDecoration(
-                        color: Color(0xFFE000000),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          const BoxShadow(
-                            color: Color(0xFFffffff),
-                            offset: Offset(2, 2),
-                            blurRadius: 10,
-                            spreadRadius: 1,
-                          ),
-                          const BoxShadow(
-                            color: Color(0xFFffffff),
-                            offset: Offset(-2, -2),
-                            blurRadius: 10,
-                            spreadRadius: 1,
-                          ),
-                        ]
-                    ),
-                  ),)
-
-
-
-
-            ],
-          )
-        ],
-      ),
-
-
-
-    ],
-  );
-
-  // show the dialog
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return alert;
-    },
-  );
+void movetoenrollment(BuildContext context){
+  Navigator.of(context).push(MaterialPageRoute(builder: (context) => enrollment()));
 }
