@@ -23,7 +23,6 @@ Future<void> search() async {
 late final firstCamera ;
 late String trainresultstatus='';
 
-late final File _imageFile;
 var now = new DateTime.now();
 var formatter = new DateFormat('MM');
 var formattertext = new DateFormat('MMM');

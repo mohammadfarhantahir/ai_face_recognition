@@ -2,8 +2,9 @@ import 'package:ai_face/screens/main1.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 
+List<CameraDescription> cameras = [];
 Future<void> main() async {
-  List<CameraDescription> cameras = [];
+
   try {
     WidgetsFlutterBinding.ensureInitialized();
 

@@ -6,13 +6,14 @@ import 'package:camera/camera.dart' as camera1;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mlkit_commons/google_mlkit_commons.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:ai_face/const/globals.dart' as globals;
 import 'package:toast/toast.dart';
-import '../const/globals.dart';
+
 import '../main.dart';
 import 'enrollment.dart';
 
@@ -170,7 +171,7 @@ class _CameraViewState extends State<CameraView> {
             gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: <Color>[Color(0xff6B5EFE), Color(0xff8A81FF)]),
+                colors: <Color>[Color(0xff000000), Color(0xff000000)]),
 
           ),
         ),
@@ -306,12 +307,8 @@ class _CameraViewState extends State<CameraView> {
             },
             child: Text('Capture Button will be automatically appeared on the screen once the camera detect HUMAN faces',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18.0,
-                  color: Colors.black,
-                  fontWeight: FontWeight.w400,
-                  //fontFamily: lang.font
-                )),
+                style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)
+            ),
           ),
 
 
@@ -345,12 +342,8 @@ class _CameraViewState extends State<CameraView> {
           },
           child: Text('Capture Image',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18.0,
-                color: Colors.black,
-                fontWeight: FontWeight.w400,
-                //fontFamily: lang.font
-              )),
+            style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)
+          ),
         ),
       ),
     );

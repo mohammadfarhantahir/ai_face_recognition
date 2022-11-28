@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:ai_face/const/globals.dart' as globals;
 
@@ -15,9 +16,7 @@ class FaceDetectorPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final textStyle = TextStyle(
-      color: Color(0xff6B5EFE),
-      fontSize: 10,
+    final textStyle =  GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold
     );
     final textSpan = TextSpan(
       text: 'Powered by NiGELLA SOFTWARES',
@@ -36,7 +35,7 @@ class FaceDetectorPainter extends CustomPainter {
     final Paint paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 5.0
-      ..color = Color(0xff6B5EFE);
+      ..color = Color(0xff000000);
 
     for (final Face face in faces) {
       canvas.drawRect(
