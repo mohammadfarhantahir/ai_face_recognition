@@ -43,6 +43,9 @@ dependencies:
   flutter_face_api_beta:
   flutter_exif_rotation:
   image_picker:
+  google_mlkit_face_detection:
+  toast:
+  intl:
 
 dev_dependencies:
   flutter_test:

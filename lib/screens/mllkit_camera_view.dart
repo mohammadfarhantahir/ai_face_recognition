@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
@@ -13,7 +12,9 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:ai_face/const/globals.dart' as globals;
 import 'package:toast/toast.dart';
+import '../const/globals.dart';
 import '../main.dart';
+import 'enrollment.dart';
 
 
 late File file1;
@@ -47,7 +48,7 @@ class _CameraViewState extends State<CameraView> {
 
   ScreenMode _mode = ScreenMode.liveFeed;
 
-  late camera1.CameraController cameraController1;
+   camera1.CameraController? cameraController1;
   File? _image;
 
   String? _path;
@@ -138,7 +139,7 @@ class _CameraViewState extends State<CameraView> {
       globals.mlcamerabool = true;
       print(globals.uint8Listglobal.toString());
       print(tmpFile.path);
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => Enrollmentwithlivness()));
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => enrollment()));
 
 
 
@@ -297,7 +298,7 @@ class _CameraViewState extends State<CameraView> {
             splashColor: Colors.red,
             onPressed: () async {
 
-              Toast.show('Cannot take Picture....', context, duration: Toast.LENGTH_LONG, gravity:  Toast.BOTTOM);
+              Toast.show('Cannot take Picture....', duration: Toast.lengthLong, gravity:  Toast.bottom);
 
 
               // _navigatetoenrollment(context);
@@ -462,7 +463,7 @@ class _CameraViewState extends State<CameraView> {
 
   Future _switchLiveCamera() async {
     setState(() => _changingCameraLens = true);
-    _cameraIndex = (_cameraIndex + 1) % cameras.length;
+   // _cameraIndex = (_cameraIndex + 1) % cameras.length;
 
     await _stopLiveFeed();
     await _startLiveFeed();

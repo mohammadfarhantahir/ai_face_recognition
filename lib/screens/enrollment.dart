@@ -14,6 +14,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:ai_face/const/globals.dart' as globals;
 
 import 'homeScreen.dart';
+import 'mlKitfaceDetectorView.dart';
 XFile? imageFile;
 late File file;
 late String imageFilenew='';
@@ -329,6 +330,8 @@ class _enrollmentState extends State<enrollment>{
                          child: GestureDetector(
                            onTap: () {
 
+                             movetobthcamera(context);
+
                              print('both camera clicekd');
                            },
                            child: Container(
@@ -450,4 +453,9 @@ class _enrollmentState extends State<enrollment>{
 
 void movetoback(BuildContext context){
   Navigator.of(context).push(MaterialPageRoute(builder: (context) => homeScreen()));
+}
+
+void movetobthcamera(BuildContext context){
+  Navigator.of(context).push(MaterialPageRoute(builder: (context) => FaceDetectorView()));
+
 }
