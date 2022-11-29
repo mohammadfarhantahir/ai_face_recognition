@@ -469,7 +469,7 @@ class _backcameraState extends State<backCamera>{
 
         child: Scaffold(
           appBar: AppBar(
-            title: Text('Front Camera Screen',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
+            title: Text('Back Camera Screen',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
             leading: IconButton(
               icon: Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () => Navigator.of(context).pop(),
@@ -845,7 +845,7 @@ class _backcameraState extends State<backCamera>{
 
 
 
-late final String uploadUrl = 'http://192.168.1.3:5000/api/recognize';
+late final String uploadUrl = 'http://'+globals.readIPURL!+':5000/api/recognize';
 Future<String?> uploadImage(filepath, url,BuildContext context) async {
 
   // showAlertDialogserverresponsewait(context);

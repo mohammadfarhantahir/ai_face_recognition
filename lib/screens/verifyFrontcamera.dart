@@ -26,6 +26,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:toast/toast.dart';
 
 import '../main.dart';
+import '../utils/dialogAlerts.dart';
 
 late String pathofimg ='';
 bool facestatusknownUnknow= false;
@@ -154,6 +155,246 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
       return null;
     }
   }
+
+  late final String uploadUrl = 'http://'+globals.readIPURL!+':5000/api/recognize';
+  Future<String?> uploadImage(filepath, url,BuildContext context) async {
+
+    // showAlertDialogserverresponsewait(context);
+    var request = http.MultipartRequest('POST', Uri.parse(url));
+    request.files.add(await http.MultipartFile.fromPath('image', filepath));
+    var res = await request.send();
+    if(res.statusCode==500){
+      print('no face found');
+
+      setState(() {
+        dialogAlerts(context);
+      });
+
+      // showAlertDialognofacedfound(context);
+
+    }
+    else{
+      //  Navigator.of(context, rootNavigator: true).pop();
+      var responseBytes = await res.stream.toBytes();
+      var responseString = utf8.decode(responseBytes);
+      resdata = responseString.toString();
+      _rere = resdata;
+      print(resdata.toString());
+      Map<String, dynamic> data = jsonDecode(_rere);
+      var token = data["image"];
+      var statusdata = data["image"];
+      String s = data["name"].toString().replaceAll("[", "");
+      nameofface =s.replaceAll("]", "");
+      if(nameofface=='unknown'){
+        facestatusknownUnknow = false;
+      }
+      else{
+        facestatusknownUnknow = true;
+      }
+      String imgval = statusdata.toString().replaceAll(' ', '');
+      String imgval1 = imgval.replaceAll("[", '');
+      String imgval2= imgval1.replaceAll(']', '');
+      imageofface = imgval2;
+      print("``````````````"+token.toString());
+      print("--->"+_rere);
+      scannedText = imgval2;
+
+      if(scannedText!=null){
+        ss = true;
+        // Navigator.of(context, rootNavigator: true).pop();
+
+        //  showAlertDialogserverresponse(context);
+      }
+      else{
+        print('NULLLL');
+      }
+      _previewImageFrontAlert(context);
+      print(responseString);
+
+    }
+
+
+
+
+
+
+
+
+    return res.reasonPhrase;
+  }
+
+  _previewImageFrontAlert(BuildContext context) {
+
+    // textfield for url
+    // set up the buttons
+    final decodestring = base64Decode('$imageofface'
+        .split(',')
+        .last);
+    Uint8List encodeedimg = decodestring;
+
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title:  Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            GestureDetector(
+              onTap: () {
+                print('cross clicked');
+                Navigator.pop(context);
+              },
+              child:
+              Icon(Icons.cancel,color: Colors.white,size: 40,),
+            )
+          ],
+        ),
+
+        content: Container(
+          height: MediaQuery.of(context).size.height/2,
+          width: MediaQuery.of(context).size.width,
+          decoration: BoxDecoration(
+              color: Color(0xFFE000000),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                const BoxShadow(
+                  color: Color(0xFFffffff),
+                  offset: Offset(2, 2),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                ),
+                const BoxShadow(
+                  color: Color(0xFFffffff),
+                  offset: Offset(-2, -2),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                ),
+              ]
+          ),
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                child: Container(
+                  // height: 100,
+                  child:  Align(
+                    alignment: Alignment.center,
+                    child: Container(
+
+                      child: Text('Face Recognition Result',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ),
+              ),
+
+
+              Padding(
+                  padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                  child:TweenAnimationBuilder<double>(
+                    tween: Tween<double>(begin: 0.0, end: 1),
+                    duration: const Duration(seconds: 3),
+                    builder: (context, value, _) => Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(100.0),
+                              child:   Image.file(
+                                File(finalPath),
+                                fit: BoxFit.cover,
+                                height: 200,
+                                width: 200,
+                              ),
+                            )
+                        ),
+                        // you can replace
+                        Container(
+
+                          height: 200,
+                          width: 200,
+
+                          child:  CircularProgressIndicator(
+
+                            valueColor: facestatusknownUnknow?AlwaysStoppedAnimation<Color>(Colors.white):AlwaysStoppedAnimation<Color>(Colors.red),
+                            strokeWidth: 5.7,
+                            value: value,
+                          ),
+                        )
+                      ],
+                    ),
+                  )
+              ),
+
+
+
+              Padding(
+                  padding: EdgeInsets.fromLTRB(15, 15, 15, 15),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                          decoration: BoxDecoration(
+                              color: Color(0xFF000000),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                const BoxShadow(
+                                  color: Color(0xFFffffff),
+                                  offset: Offset(2, 2),
+                                  blurRadius: 10,
+                                  spreadRadius: 1,
+                                ),
+                                const BoxShadow(
+                                  color: Color(0xFFffffff),
+                                  offset: Offset(-2, -2),
+                                  blurRadius: 10,
+                                  spreadRadius: 1,
+                                ),
+                              ]
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(5, 5, 20, 5),
+                            child: Text('Name: $nameofface',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
+                          )
+                      ),
+                      SizedBox(
+                        width: 40,
+                      ),
+
+
+                    ],
+                  )
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    child: facestatusknownUnknow?Text('Found',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)
+                      ,):Text('Not Found',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
+                  )
+                ],
+              ),
+
+
+            ],
+          ),
+        )
+
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
+
 
 
   void resetCameraValues() async {
@@ -673,236 +914,3 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
 
 }
 
-
-late final String uploadUrl = 'http://192.168.1.3:5000/api/recognize';
-Future<String?> uploadImage(filepath, url,BuildContext context) async {
-
-  // showAlertDialogserverresponsewait(context);
-  var request = http.MultipartRequest('POST', Uri.parse(url));
-  request.files.add(await http.MultipartFile.fromPath('image', filepath));
-  var res = await request.send();
-  if(res.statusCode==500){
-    print('no face dound');
-   // showAlertDialognofacedfound(context);
-
-  }
-  else{
-    //  Navigator.of(context, rootNavigator: true).pop();
-    var responseBytes = await res.stream.toBytes();
-    var responseString = utf8.decode(responseBytes);
-    resdata = responseString.toString();
-    _rere = resdata;
-    print(resdata.toString());
-    Map<String, dynamic> data = jsonDecode(_rere);
-    var token = data["image"];
-    var statusdata = data["image"];
-    String s = data["name"].toString().replaceAll("[", "");
-    nameofface =s.replaceAll("]", "");
-    if(nameofface=='unknown'){
-      facestatusknownUnknow = false;
-    }
-    else{
-      facestatusknownUnknow = true;
-    }
-    String imgval = statusdata.toString().replaceAll(' ', '');
-    String imgval1 = imgval.replaceAll("[", '');
-    String imgval2= imgval1.replaceAll(']', '');
-    imageofface = imgval2;
-    print("``````````````"+token.toString());
-    print("--->"+_rere);
-    scannedText = imgval2;
-
-    if(scannedText!=null){
-      ss = true;
-      // Navigator.of(context, rootNavigator: true).pop();
-
-    //  showAlertDialogserverresponse(context);
-    }
-    else{
-      print('NULLLL');
-    }
-    _previewImageFrontAlert(context);
-    print(responseString);
-
-  }
-
-
-
-
-
-
-
-
-  return res.reasonPhrase;
-}
-
-_previewImageFrontAlert(BuildContext context) {
-
-  // textfield for url
-  // set up the buttons
-  final decodestring = base64Decode('$imageofface'
-      .split(',')
-      .last);
-  Uint8List encodeedimg = decodestring;
-
-
-  // set up the AlertDialog
-  AlertDialog alert = AlertDialog(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      title:  Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          GestureDetector(
-            onTap: () {
-              print('cross clicked');
-              Navigator.pop(context);
-            },
-            child:
-            Icon(Icons.cancel,color: Colors.white,size: 40,),
-          )
-        ],
-      ),
-
-      content: Container(
-        height: MediaQuery.of(context).size.height/2,
-        width: MediaQuery.of(context).size.width,
-        decoration: BoxDecoration(
-            color: Color(0xFFE000000),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              const BoxShadow(
-                color: Color(0xFFffffff),
-                offset: Offset(2, 2),
-                blurRadius: 10,
-                spreadRadius: 1,
-              ),
-              const BoxShadow(
-                color: Color(0xFFffffff),
-                offset: Offset(-2, -2),
-                blurRadius: 10,
-                spreadRadius: 1,
-              ),
-            ]
-        ),
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-              child: Container(
-                // height: 100,
-                child:  Align(
-                  alignment: Alignment.center,
-                  child: Container(
-
-                    child: Text('Face Recognition Result',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
-                  ),
-                ),
-              ),
-            ),
-
-
-            Padding(
-                padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                child:TweenAnimationBuilder<double>(
-                  tween: Tween<double>(begin: 0.0, end: 1),
-                  duration: const Duration(seconds: 3),
-                  builder: (context, value, _) => Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Container(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(100.0),
-                            child:   Image.file(
-                              File(finalPath),
-                              fit: BoxFit.cover,
-                              height: 200,
-                              width: 200,
-                            ),
-                          )
-                      ),
-                      // you can replace
-                      Container(
-
-                        height: 200,
-                        width: 200,
-
-                        child:  CircularProgressIndicator(
-
-                          valueColor: facestatusknownUnknow?AlwaysStoppedAnimation<Color>(Colors.white):AlwaysStoppedAnimation<Color>(Colors.red),
-                          strokeWidth: 5.7,
-                          value: value,
-                        ),
-                      )
-                    ],
-                  ),
-                )
-            ),
-
-
-
-            Padding(
-                padding: EdgeInsets.fromLTRB(15, 15, 15, 15),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                        decoration: BoxDecoration(
-                            color: Color(0xFF000000),
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              const BoxShadow(
-                                color: Color(0xFFffffff),
-                                offset: Offset(2, 2),
-                                blurRadius: 10,
-                                spreadRadius: 1,
-                              ),
-                              const BoxShadow(
-                                color: Color(0xFFffffff),
-                                offset: Offset(-2, -2),
-                                blurRadius: 10,
-                                spreadRadius: 1,
-                              ),
-                            ]
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(5, 5, 20, 5),
-                          child: Text('Name: $nameofface',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
-                        )
-                    ),
-                    SizedBox(
-                      width: 40,
-                    ),
-
-
-                  ],
-                )
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  child: facestatusknownUnknow?Text('Found',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)
-                    ,):Text('Not Found',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
-                )
-              ],
-            ),
-
-
-          ],
-        ),
-      )
-
-  );
-
-  // show the dialog
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return alert;
-    },
-  );
-}
