@@ -149,6 +149,9 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
 
 
 
+
+
+
       return file;
     } on CameraException catch (e) {
       print('Error occured while taking picture: $e');
@@ -167,6 +170,8 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
       print('no face found');
 
       setState(() {
+
+        globals.dialogloading=true;
         dialogAlerts(context);
       });
 
@@ -174,7 +179,7 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
 
     }
     else{
-      //  Navigator.of(context, rootNavigator: true).pop();
+
       var responseBytes = await res.stream.toBytes();
       var responseString = utf8.decode(responseBytes);
       resdata = responseString.toString();
@@ -186,9 +191,11 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
       String s = data["name"].toString().replaceAll("[", "");
       nameofface =s.replaceAll("]", "");
       if(nameofface=='unknown'){
+
         facestatusknownUnknow = false;
       }
       else{
+
         facestatusknownUnknow = true;
       }
       String imgval = statusdata.toString().replaceAll(' ', '');
@@ -203,13 +210,17 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
         ss = true;
         // Navigator.of(context, rootNavigator: true).pop();
 
-        //  showAlertDialogserverresponse(context);
+
       }
       else{
         print('NULLLL');
       }
-      _previewImageFrontAlert(context);
-      print(responseString);
+      setState(() {
+        globals.dialogloading=true;
+        _previewImageFrontAlert(context);
+        print(responseString);
+      });
+
 
     }
 
@@ -242,6 +253,7 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
           children: [
             GestureDetector(
               onTap: () {
+
                 print('cross clicked');
                 Navigator.pop(context);
               },
@@ -387,6 +399,7 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
 
     // show the dialog
     showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (BuildContext context) {
         return alert;
@@ -450,9 +463,9 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
     }
 
     if (mounted) {
-      setState(() async {
-        _isCameraInitialized = controller!.value.isInitialized;
-        await controller!.lockCaptureOrientation(DeviceOrientation.portraitUp);
+      setState(()  {
+         _isCameraInitialized = controller!.value.isInitialized;
+         controller!.lockCaptureOrientation(DeviceOrientation.portraitUp);
       });
     }
   }
@@ -506,8 +519,13 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return WillPopScope(
-      onWillPop:  () async {
+    return
+
+      SafeArea(
+       // minimum: const EdgeInsets.only(bottom: 15.00),
+
+        child: WillPopScope(
+        onWillPop:  () async {
 
         count++;
         if(count==1){
@@ -516,7 +534,7 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
 
 
 
-          // showaip(context);
+        // showaip(context);
 
 
         }
@@ -525,19 +543,15 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
 
         }
         else{
-          // Toast.show('Back button press'+count.toString(), context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+        // Toast.show('Back button press'+count.toString(), context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
         }
         // Do something here
         print("After clicking the Android Back Button");
 
         return false;
-      },
-      child:
-
-      SafeArea(
-        minimum: const EdgeInsets.only(bottom: 15.00),
-
-        child: Scaffold(
+        },
+        child:
+        Scaffold(
           appBar: AppBar(
             title: Text('Front Camera Screen',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
             leading: IconButton(
@@ -821,39 +835,50 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
                                   InkWell(
                                     onTap: () {
                                       print('clicked');
+                                      globals.dialogloading=false;
+
                                       takePicture(context);
 
 
 
+
                                     }, // Handle your onTap
-                                    child:
-                                    Stack(
-                                      alignment: Alignment.center,
+                                    child:Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        Icon(
-                                          Icons.circle,
-                                          color: _isVideoCameraSelected
-                                              ? Colors.white
-                                              : Colors.white38,
-                                          size: 80,
-                                        ),
-                                        Icon(
-                                          Icons.circle,
-                                          color: _isVideoCameraSelected
-                                              ? Colors.red
-                                              : Colors.white,
-                                          size: 65,
-                                        ),
-                                        _isVideoCameraSelected &&
-                                            _isRecordingInProgress
-                                            ? Icon(
-                                          Icons.stop_rounded,
-                                          color: Colors.white,
-                                          size: 32,
+                                        globals.dialogloading?Icon(Icons.circle,color: Colors.white,size: 80,):
+                                        TweenAnimationBuilder<double>(
+                                          tween: Tween<double>(begin: 0.0, end: 1),
+                                          duration: const Duration(seconds: 3),
+                                          builder: (context, value, _) => Stack(
+                                            alignment: Alignment.center,
+                                            children: [
+
+                                              Container(
+
+                                                child: Text('Wait',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
+                                              ),
+
+                                              Container(
+
+                                                height: 80,
+                                                width: 80,
+
+                                                child:  CircularProgressIndicator(
+
+                                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.redAccent),
+                                                  strokeWidth: 5.7,
+                                                  value: value,
+                                                ),
+                                              )
+                                            ],
+                                          ),
                                         )
-                                            : Container(),
+                                        //Text('Wait',style: GoogleFonts.gruppo(fontSize: 80,color: Colors.red,fontWeight: FontWeight.bold)),
+
                                       ],
-                                    ),
+                                    )
+
                                   ),
 
 
@@ -908,8 +933,9 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
             ],
           ),
         ),
-      ),
-    );
+        )
+      );
+
   }
 
 }

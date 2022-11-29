@@ -11,7 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 import 'package:ai_face/const/globals.dart' as globals;
 
-import '../utils/curve_wave.dart';
+
 import 'enrollment.dart';
 import 'verifyBackcamera.dart';
 

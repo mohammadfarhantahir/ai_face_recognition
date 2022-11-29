@@ -42,6 +42,8 @@ late String valueoftrainstatus='';
 late String serverstatusstart='';
 late Stopwatch stopwatch;
 String? readIPURL;
+bool dialogloading = true;
+
 
 late String imagelabelname ='';
 String currenttime = DateFormat.jm().format(now);
