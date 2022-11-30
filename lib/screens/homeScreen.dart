@@ -659,126 +659,54 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                             SizedBox(
                               height: 50,
                             ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Expanded(
-                                    flex: 1,
-                                    child: Padding(
-                                      padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          movetobackcamera(context);
-                                          print('Back camera clicekd');
-                                        },
-                                        child: Container(
-                                          width: MediaQuery.of(context).size.width/1.2,
-                                          height: 100,
-                                          padding: EdgeInsets.all(8),
-                                          child: Center(
-                                              child: Row(
-                                                children: [
-                                                  Expanded(child: Icon(CupertinoIcons.camera,color: Colors.white,)),
-                                                  Expanded(
-                                                    flex: 2,
-                                                    child:
-                                                    Padding(
-                                                      padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
-                                                      child:  FittedBox(
-                                                        fit: BoxFit.fitWidth,
-                                                        child:Text('Verify using\nBack camera',style: GoogleFonts.didactGothic(color: Colors.white,fontWeight: FontWeight.bold),
-                                                        )
-                                                        ,),
-                                                    )
-                                                  )
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                              child: GestureDetector(
+                                onTap: () {
+                                  movetobackcamera(context);
+                                  print('Back camera clicekd');
+                                },
+                                child: Container(
+                                  width: MediaQuery.of(context).size.width/1.2,
+                                  height: 100,
+                                  padding: EdgeInsets.all(8),
+                                  child: Center(
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            flex:1,
+                                              child: Icon(CupertinoIcons.camera,color: Colors.white,)),
+                                          Expanded(
+                                              flex: 1,
+                                              child:
+                                              Text('Verify using\nBack camera',style: GoogleFonts.didactGothic(fontSize:18,color: Colors.white,fontWeight: FontWeight.bold),
+                                                ),
+                                          )
 
-                                                ],
-                                              )
-                                          ),
-                                          decoration: BoxDecoration(
-                                              color: Color(0xFF000000),
-                                              borderRadius: BorderRadius.circular(20),
-                                              boxShadow: [
-                                                const BoxShadow(
-                                                  color: Color(0xFFffffff),
-                                                  offset: Offset(2, 2),
-                                                  blurRadius: 10,
-                                                  spreadRadius: 1,
-                                                ),
-                                                const BoxShadow(
-                                                  color: Color(0xFFffffff),
-                                                  offset: Offset(-2, -2),
-                                                  blurRadius: 10,
-                                                  spreadRadius: 1,
-                                                ),
-                                              ]
-                                          ),
+                                        ],
+                                      )
+                                  ),
+                                  decoration: BoxDecoration(
+                                      color: Color(0xFF000000),
+                                      borderRadius: BorderRadius.circular(20),
+                                      boxShadow: [
+                                        const BoxShadow(
+                                          color: Color(0xFFffffff),
+                                          offset: Offset(2, 2),
+                                          blurRadius: 10,
+                                          spreadRadius: 1,
                                         ),
-
-                                      ),
-                                    )
-                                ),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                Expanded(
-                                    flex: 1,
-                                    child:  Padding(
-                                      padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          print('About us clicekd');
-                                        },
-                                        child: Container(
-                                          width: MediaQuery.of(context).size.width/1.2,
-                                          height: 100,
-                                          padding: EdgeInsets.all(8),
-                                          child: Center(
-                                              child:Row(
-                                                children: [
-                                                  Expanded(
-                                                      flex: 1,
-                                                      child:Icon(Icons.info,color: Colors.white,) ),
-                                                  Expanded(
-                                                    flex: 2,
-                                                    child:Padding(
-                                                      padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
-                                                      child: FittedBox(
-                                                        fit: BoxFit.fitWidth,
-                                                        child: Text('About Us',style: GoogleFonts.didactGothic(color: Colors.white,fontWeight: FontWeight.bold),
-                                                        ),
-                                                      ),
-                                                    )
-                                                  )
-                                                ],
-                                              )
-                                          ),
-                                          decoration: BoxDecoration(
-                                              color: Color(0xFF000000),
-                                              borderRadius: BorderRadius.circular(20),
-                                              boxShadow: [
-                                                const BoxShadow(
-                                                  color: Color(0xFFffffff),
-                                                  offset: Offset(2, 2),
-                                                  blurRadius: 10,
-                                                  spreadRadius: 1,
-                                                ),
-                                                const BoxShadow(
-                                                  color: Color(0xFFffffff),
-                                                  offset: Offset(-2, -2),
-                                                  blurRadius: 10,
-                                                  spreadRadius: 1,
-                                                ),
-                                              ]
-                                          ),
+                                        const BoxShadow(
+                                          color: Color(0xFFffffff),
+                                          offset: Offset(-2, -2),
+                                          blurRadius: 10,
+                                          spreadRadius: 1,
                                         ),
-
-                                      ),
-                                    )
+                                      ]
+                                  ),
                                 ),
 
-
-                              ],
+                              ),
                             )
                           ],
                         ),

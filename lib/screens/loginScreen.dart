@@ -49,7 +49,7 @@ class loginScreenState extends State<loginScreenMain>{
                     padding: EdgeInsets.all(10),
                     child: TextField(
                       style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.black),
-                      keyboardType: TextInputType.numberWithOptions(),
+                      //keyboardType: TextInputType.numberWithOptions(),
                      // controller: urlController,
                       decoration: InputDecoration(
                         floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -98,7 +98,9 @@ class loginScreenState extends State<loginScreenMain>{
                     padding: EdgeInsets.all(10),
                     child: TextField(
                       style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.black),
-                      keyboardType: TextInputType.numberWithOptions(),
+                      obscureText: true,
+                      enableSuggestions: false,
+                      autocorrect: false,
                       // controller: urlController,
                       decoration: InputDecoration(
                         floatingLabelBehavior: FloatingLabelBehavior.never,

@@ -1,7 +1,6 @@
 
 
-import 'package:flutter/cupertino.dart';
-
+import 'dart:math';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,6 +12,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 
 import 'package:camera/camera.dart';
@@ -28,15 +28,21 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'package:toast/toast.dart';
 
+import '../api/insert_verification_record.dart';
+import '../api/update_verification_record.dart';
 import '../main.dart';
-bool facestatusknownUnknow = false;
+import '../utils/dialogAlerts.dart';
+
 late String pathofimg ='';
+bool facestatusknownUnknow= false;
 File? localFile;
 late String filepath1='';
 late String resdata='';
 late String imgpatfhforalert;
 late String nameofface='';
 late String _rere='';
+
+
 
 late String imageofface = '';
 late File file1;
@@ -50,12 +56,13 @@ late String scannedText ='';
 bool textScanning = false;
 class backCamera extends StatefulWidget{
 
-  State<backCamera> createState() => _backcameraState();
+  State<backCamera> createState()=> _backcameraState();
 }
-
 class _backcameraState extends State<backCamera>{
   CameraController? controller;
-
+  var currentTime;
+  Random random = new Random();
+  String holdRanvalue='';
 
 
   // Initial values
@@ -68,6 +75,7 @@ class _backcameraState extends State<backCamera>{
   double _maxAvailableExposureOffset = 0.0;
   double _minAvailableZoom = 1.0;
   double _maxAvailableZoom = 1.0;
+
 
   // Current values
   double _currentZoomLevel = 1.0;
@@ -85,7 +93,7 @@ class _backcameraState extends State<backCamera>{
     var status = await Permission.camera.status;
 
     if (status.isGranted) {
-      log('Camera Permission: GRANTED');
+      //log('Camera Permission: GRANTED');
       setState(() {
         _isCameraPermissionGranted = true;
       });
@@ -93,7 +101,7 @@ class _backcameraState extends State<backCamera>{
       onNewCameraSelected(cameras[0]);
       refreshAlreadyCapturedImages();
     } else {
-      log('Camera Permission: DENIED');
+      // log('Camera Permission: DENIED');
     }
   }
 
@@ -121,6 +129,9 @@ class _backcameraState extends State<backCamera>{
     }
   }
 
+
+
+
   Future<XFile?> takePicture(BuildContext context) async {
     final CameraController? cameraController = controller;
 
@@ -144,10 +155,32 @@ class _backcameraState extends State<backCamera>{
 
 
       print(tmpFile.path);
-
-
-
+      var now = new DateTime.now();
+      currentTime = DateFormat.jm().format(now);
+      var formatter = new DateFormat('MM');
+      var formattertext = new DateFormat('MMM');
+      var formatteryear = new DateFormat('yyyy');
+      var formatterdat = new DateFormat('dd');
+      String currentMOnth = formatter.format(now);
+      String currentYEar =  formatteryear.format(now);
+      String currentday = formatterdat.format(now);
+      String currentdate = currentday;
+      String todaysdate = currentdate+'/'+currentMOnth+'/'+currentYEar;
+      String newtodaysdate = currentdate+'-'+currentMOnth+'-'+currentYEar;
+      setState(() {
+        int randomNumber = random.nextInt(1000); // from 0 upto 990 included
+        holdRanvalue = randomNumber.toString();
+      });
+      print('current time is --->'+holdRanvalue+' '+currentTime.toString()+newtodaysdate);
+      insertVerificationRecord(context,holdRanvalue,currentTime.toString(),newtodaysdate);
       uploadImage(finalPath, uploadUrl, context);
+
+
+
+
+
+
+
 
 
 
@@ -158,173 +191,275 @@ class _backcameraState extends State<backCamera>{
     }
   }
 
-  _previewImageAlert(BuildContext context) {
+  late final String uploadUrl = 'http://'+globals.readIPURL!+':5000/api/recognize';
+  Future<String?> uploadImage(filepath, url,BuildContext context) async {
+
+    // showAlertDialogserverresponsewait(context);
+    var request = http.MultipartRequest('POST', Uri.parse(url));
+    request.files.add(await http.MultipartFile.fromPath('image', filepath));
+    var res = await request.send();
+    if(res.statusCode==500){
+      print('no face found');
+
+      setState(() {
+        var now = new DateTime.now();
+        final updatedCurrentTime = DateFormat.jm().format(now);
+        var formatter = new DateFormat('MM');
+        var formattertext = new DateFormat('MMM');
+        var formatteryear = new DateFormat('yyyy');
+        var formatterdat = new DateFormat('dd');
+        String currentMOnth = formatter.format(now);
+        String currentYEar =  formatteryear.format(now);
+        String currentday = formatterdat.format(now);
+        String currentdate = currentday;
+        String todaysdate = currentdate+'/'+currentMOnth+'/'+currentYEar;
+        String newtodaysdate = currentdate+'-'+currentMOnth+'-'+currentYEar;
+        print('updated time is --->'+holdRanvalue+' '+updatedCurrentTime+'no face found');
+        updateVerificationRecord(context,holdRanvalue,updatedCurrentTime,'no face found');
+        globals.dialogloading=true;
+        dialogAlerts(context);
+      });
+
+      // showAlertDialognofacedfound(context);
+
+    }
+    else{
+
+      var responseBytes = await res.stream.toBytes();
+      var responseString = utf8.decode(responseBytes);
+      resdata = responseString.toString();
+      _rere = resdata;
+      print(resdata.toString());
+      Map<String, dynamic> data = jsonDecode(_rere);
+      var token = data["image"];
+      var statusdata = data["image"];
+      String s = data["name"].toString().replaceAll("[", "");
+      nameofface =s.replaceAll("]", "");
+      globals.verifiedName = nameofface;
+      if(nameofface=='unknown'){
+
+        facestatusknownUnknow = false;
+      }
+      else{
+
+        facestatusknownUnknow = true;
+      }
+      String imgval = statusdata.toString().replaceAll(' ', '');
+      String imgval1 = imgval.replaceAll("[", '');
+      String imgval2= imgval1.replaceAll(']', '');
+      imageofface = imgval2;
+      print("``````````````"+token.toString());
+      print("--->"+_rere);
+      scannedText = imgval2;
+
+      if(scannedText!=null){
+        ss = true;
+        // Navigator.of(context, rootNavigator: true).pop();
+
+
+      }
+      else{
+        print('NULLLL');
+      }
+      setState(() {
+        var now = new DateTime.now();
+        final updatedCurrentTime1 = DateFormat.jm().format(now);
+
+
+        print('updated time is --->'+holdRanvalue+' '+updatedCurrentTime1+nameofface);
+        updateVerificationRecord(context,holdRanvalue,updatedCurrentTime1,nameofface);
+        globals.dialogloading=true;
+        _previewImageFrontAlert(context);
+        print(responseString);
+      });
+
+
+    }
+
+
+
+
+
+
+
+
+    return res.reasonPhrase;
+  }
+
+  _previewImageFrontAlert(BuildContext context) {
 
     // textfield for url
     // set up the buttons
-
+    final decodestring = base64Decode('$imageofface'
+        .split(',')
+        .last);
+    Uint8List encodeedimg = decodestring;
 
 
     // set up the AlertDialog
     AlertDialog alert = AlertDialog(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      title:  Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          GestureDetector(
-          onTap: () {
-        print('cross clicked');
-        Navigator.pop(context);
-        },
-      child:
-      Icon(Icons.cancel,color: Colors.white,size: 40,),
-          )
-        ],
-      ),
-
-      content: Container(
-        height: MediaQuery.of(context).size.height/2,
-        width: MediaQuery.of(context).size.width,
-        decoration: BoxDecoration(
-            color: Color(0xFFE000000),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              const BoxShadow(
-                color: Color(0xFFffffff),
-                offset: Offset(2, 2),
-                blurRadius: 10,
-                spreadRadius: 1,
-              ),
-              const BoxShadow(
-                color: Color(0xFFffffff),
-                offset: Offset(-2, -2),
-                blurRadius: 10,
-                spreadRadius: 1,
-              ),
-            ]
-        ),
-        child: Column(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title:  Row(
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
-                Padding(
-                    padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                    child: Container(
-                      // height: 100,
-                      child:  Align(
-                        alignment: Alignment.center,
-                        child: Container(
+            GestureDetector(
+              onTap: () {
 
-                          child: Text('Face Recognition Result',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
-                        ),
-                      ),
-                    ),
+                print('cross clicked');
+                Navigator.pop(context);
+              },
+              child:
+              Icon(Icons.cancel,color: Colors.white,size: 40,),
+            )
+          ],
+        ),
+
+        content: Container(
+          height: MediaQuery.of(context).size.height/2,
+          width: MediaQuery.of(context).size.width,
+          decoration: BoxDecoration(
+              color: Color(0xFFE000000),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                const BoxShadow(
+                  color: Color(0xFFffffff),
+                  offset: Offset(2, 2),
+                  blurRadius: 10,
+                  spreadRadius: 1,
                 ),
+                const BoxShadow(
+                  color: Color(0xFFffffff),
+                  offset: Offset(-2, -2),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                ),
+              ]
+          ),
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                child: Container(
+                  // height: 100,
+                  child:  Align(
+                    alignment: Alignment.center,
+                    child: Container(
 
-
-          Padding(
-              padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-            child:TweenAnimationBuilder<double>(
-              tween: Tween<double>(begin: 0.0, end: 1),
-              duration: const Duration(seconds: 3),
-              builder: (context, value, _) => Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                    child: ClipRRect(
-              borderRadius: BorderRadius.circular(100.0),
-              child:   Image.file(
-                File(finalPath),
-                fit: BoxFit.cover,
-                height: 200,
-                width: 200,
-              ),
-               )
+                      child: Text('Face Recognition Result',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
+                    ),
                   ),
-                  // you can replace
-                  Container(
+                ),
+              ),
 
-                    height: 200,
-                    width: 200,
 
-                    child:  CircularProgressIndicator(
+              Padding(
+                  padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                  child:TweenAnimationBuilder<double>(
+                    tween: Tween<double>(begin: 0.0, end: 1),
+                    duration: const Duration(seconds: 3),
+                    builder: (context, value, _) => Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(100.0),
+                              child:   Image.file(
+                                File(finalPath),
+                                fit: BoxFit.cover,
+                                height: 200,
+                                width: 200,
+                              ),
+                            )
+                        ),
+                        // you can replace
+                        Container(
 
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      strokeWidth: 5.7,
-                      value: value,
+                          height: 200,
+                          width: 200,
+
+                          child:  CircularProgressIndicator(
+
+                            valueColor: facestatusknownUnknow?AlwaysStoppedAnimation<Color>(Colors.white):AlwaysStoppedAnimation<Color>(Colors.red),
+                            strokeWidth: 5.7,
+                            value: value,
+                          ),
+                        )
+                      ],
                     ),
                   )
-                ],
               ),
-            )
-          ),
 
 
 
-            Padding(
-                padding: EdgeInsets.fromLTRB(15, 15, 15, 15),
-              child: Column(
+              Padding(
+                  padding: EdgeInsets.fromLTRB(15, 15, 15, 15),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                          decoration: BoxDecoration(
+                              color: Color(0xFF000000),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                const BoxShadow(
+                                  color: Color(0xFFffffff),
+                                  offset: Offset(2, 2),
+                                  blurRadius: 10,
+                                  spreadRadius: 1,
+                                ),
+                                const BoxShadow(
+                                  color: Color(0xFFffffff),
+                                  offset: Offset(-2, -2),
+                                  blurRadius: 10,
+                                  spreadRadius: 1,
+                                ),
+                              ]
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(5, 5, 20, 5),
+                            child: Text('Name: $nameofface',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
+                          )
+                      ),
+                      SizedBox(
+                        width: 40,
+                      ),
+
+
+                    ],
+                  )
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    decoration: BoxDecoration(
-                        color: Color(0xFF000000),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          const BoxShadow(
-                            color: Color(0xFFffffff),
-                            offset: Offset(2, 2),
-                            blurRadius: 10,
-                            spreadRadius: 1,
-                          ),
-                          const BoxShadow(
-                            color: Color(0xFFffffff),
-                            offset: Offset(-2, -2),
-                            blurRadius: 10,
-                            spreadRadius: 1,
-                          ),
-                        ]
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(5, 5, 20, 5),
-                      child: Text('docID: 14171009 ',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
-                    )
-                  ),
-                  SizedBox(
-                    width: 40,
-                  ),
-
-
+                    child: facestatusknownUnknow?Text('Found',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)
+                      ,):Text('Not Found',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
+                  )
                 ],
-              )
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  child: Text('Found',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)
-                    ,),
-                )
-              ],
-            ),
+              ),
 
 
-          ],
-        ),
-      )
+            ],
+          ),
+        )
 
     );
 
     // show the dialog
     showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (BuildContext context) {
         return alert;
       },
     );
   }
+
+
 
 
   void resetCameraValues() async {
@@ -380,9 +515,9 @@ class _backcameraState extends State<backCamera>{
     }
 
     if (mounted) {
-      setState(() async {
+      setState(()  {
         _isCameraInitialized = controller!.value.isInitialized;
-        await controller!.lockCaptureOrientation(DeviceOrientation.portraitUp);
+        controller!.lockCaptureOrientation(DeviceOrientation.portraitUp);
       });
     }
   }
@@ -436,236 +571,277 @@ class _backcameraState extends State<backCamera>{
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return WillPopScope(
-      onWillPop:  () async {
-
-        count++;
-        if(count==1){
-
-
-
-
-
-          // showaip(context);
-
-
-        }
-        if(count==2){
-
-
-        }
-        else{
-          // Toast.show('Back button press'+count.toString(), context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
-        }
-        // Do something here
-        print("After clicking the Android Back Button");
-
-        return false;
-      },
-      child:
+    return
 
       SafeArea(
-        minimum: const EdgeInsets.only(bottom: 15.00),
+        // minimum: const EdgeInsets.only(bottom: 15.00),
 
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text('Back Camera Screen',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            flexibleSpace: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: <Color>[Color(0xff000000), Color(0xff000000)]),
+          child: WillPopScope(
+            onWillPop:  () async {
 
+              count++;
+              if(count==1){
+
+
+
+
+
+                // showaip(context);
+
+
+              }
+              if(count==2){
+
+
+              }
+              else{
+                // Toast.show('Back button press'+count.toString(), context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+              }
+              // Do something here
+              print("After clicking the Android Back Button");
+
+              return false;
+            },
+            child:
+            Scaffold(
+              appBar: AppBar(
+                title: Text('Back Camera Screen',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
+                leading: IconButton(
+                  icon: Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+                flexibleSpace: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: <Color>[Color(0xff000000), Color(0xff000000)]),
+
+                  ),
+                ),
               ),
-            ),
-          ),
-          backgroundColor: Colors.black,
-          body: _isCameraPermissionGranted
-              ? _isCameraInitialized
-              ? Container(
-              decoration: BoxDecoration(
-                  color: Color(0xFF000000),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    const BoxShadow(
-                      color: Color(0xFFffffff),
-                      offset: Offset(2, 2),
-                      blurRadius: 10,
-                      spreadRadius: 1,
-                    ),
-                    const BoxShadow(
-                      color: Color(0xFFffffff),
-                      offset: Offset(-2, -2),
-                      blurRadius: 10,
-                      spreadRadius: 1,
-                    ),
-                  ]
-              ),
+              backgroundColor: Colors.black,
+              body: _isCameraPermissionGranted
+                  ? _isCameraInitialized
+                  ? Container(
+                  decoration: BoxDecoration(
+                      color: Color(0xFF000000),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        const BoxShadow(
+                          color: Color(0xFFffffff),
+                          offset: Offset(2, 2),
+                          blurRadius: 10,
+                          spreadRadius: 1,
+                        ),
+                        const BoxShadow(
+                          color: Color(0xFFffffff),
+                          offset: Offset(-2, -2),
+                          blurRadius: 10,
+                          spreadRadius: 1,
+                        ),
+                      ]
+                  ),
 
-              margin: EdgeInsets.all(10) ,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                child:   Column(
-                  children: [
-                    AspectRatio(
-                      aspectRatio: 1 / controller!.value.aspectRatio,
-                      child: Stack(
-                        children: [
+                  margin: EdgeInsets.all(10) ,
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                    child:   Column(
+                      children: [
+                        AspectRatio(
+                          aspectRatio: 1 / controller!.value.aspectRatio,
+                          child: Stack(
+                            children: [
 
-                          CameraPreview(
-                            controller!,
-                            child: LayoutBuilder(builder:
-                                (BuildContext context,
-                                BoxConstraints constraints) {
-                              return GestureDetector(
-                                behavior: HitTestBehavior.opaque,
-                                onTapDown: (details) =>
-                                    onViewFinderTap(details, constraints),
-                              );
-                            }),
-                          ),
+                              CameraPreview(
+                                controller!,
+                                child: LayoutBuilder(builder:
+                                    (BuildContext context,
+                                    BoxConstraints constraints) {
+                                  return GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTapDown: (details) =>
+                                        onViewFinderTap(details, constraints),
+                                  );
+                                }),
+                              ),
 
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(
-                              16.0,
-                              8.0,
-                              16.0,
-                              8.0,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Align(
-                                  alignment: Alignment.topRight,
-                                  child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.black87,
-                                        borderRadius:
-                                        BorderRadius.circular(10.0),
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  16.0,
+                                  8.0,
+                                  16.0,
+                                  8.0,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Align(
+                                      alignment: Alignment.topRight,
+                                      child: Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.black87,
+                                            borderRadius:
+                                            BorderRadius.circular(10.0),
+                                          ),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                                color: Color(0xFF000000),
+                                                borderRadius: BorderRadius.circular(8),
+                                                boxShadow: [
+                                                  const BoxShadow(
+                                                    color: Color(0xFFffffff),
+                                                    offset: Offset(2, 2),
+                                                    blurRadius: 10,
+                                                    spreadRadius: 1,
+                                                  ),
+                                                  const BoxShadow(
+                                                    color: Color(0xFFffffff),
+                                                    offset: Offset(-2, -2),
+                                                    blurRadius: 10,
+                                                    spreadRadius: 1,
+                                                  ),
+                                                ]
+                                            ),
+                                            child:  DropdownButton<ResolutionPreset>(
+                                              dropdownColor: Colors.black87,
+                                              underline: Container(),
+                                              value: currentResolutionPreset,
+                                              items: [
+                                                for (ResolutionPreset preset
+                                                in resolutionPresets)
+                                                  DropdownMenuItem(
+                                                    child: Text(
+                                                      preset
+                                                          .toString()
+                                                          .split('.')[1]
+                                                          .toUpperCase(),
+                                                      style: TextStyle(
+                                                          color: Colors.white),
+                                                    ),
+                                                    value: preset,
+                                                  )
+                                              ],
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  currentResolutionPreset = value!;
+                                                  _isCameraInitialized = false;
+                                                });
+                                                onNewCameraSelected(
+                                                    controller!.description);
+                                              },
+                                              hint: Text("Select item"),
+                                            ),
+                                          )
                                       ),
+                                    ),
+                                    // Spacer(),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          right: 8.0, top: 16.0),
                                       child: Container(
                                         decoration: BoxDecoration(
-                                            color: Color(0xFF000000),
-                                            borderRadius: BorderRadius.circular(8),
-                                            boxShadow: [
-                                              const BoxShadow(
-                                                color: Color(0xFFffffff),
-                                                offset: Offset(2, 2),
-                                                blurRadius: 10,
-                                                spreadRadius: 1,
-                                              ),
-                                              const BoxShadow(
-                                                color: Color(0xFFffffff),
-                                                offset: Offset(-2, -2),
-                                                blurRadius: 10,
-                                                spreadRadius: 1,
-                                              ),
-                                            ]
+                                          color: Colors.white,
+                                          borderRadius:
+                                          BorderRadius.circular(10.0),
                                         ),
-                                        child:  DropdownButton<ResolutionPreset>(
-                                          dropdownColor: Colors.black87,
-                                          underline: Container(),
-                                          value: currentResolutionPreset,
-                                          items: [
-                                            for (ResolutionPreset preset
-                                            in resolutionPresets)
-                                              DropdownMenuItem(
-                                                child: Text(
-                                                  preset
-                                                      .toString()
-                                                      .split('.')[1]
-                                                      .toUpperCase(),
-                                                  style: TextStyle(
-                                                      color: Colors.white),
-                                                ),
-                                                value: preset,
-                                              )
-                                          ],
-                                          onChanged: (value) {
-                                            setState(() {
-                                              currentResolutionPreset = value!;
-                                              _isCameraInitialized = false;
-                                            });
-                                            onNewCameraSelected(
-                                                controller!.description);
-                                          },
-                                          hint: Text("Select item"),
-                                        ),
-                                      )
-                                  ),
-                                ),
-                                // Spacer(),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      right: 8.0, top: 16.0),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius:
-                                      BorderRadius.circular(10.0),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Text(
-                                        _currentExposureOffset
-                                            .toStringAsFixed(1) +
-                                            'x',
-                                        style: TextStyle(color: Colors.black),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: RotatedBox(
-                                    quarterTurns: 3,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                          color: Color(0xFF000000),
-                                          borderRadius: BorderRadius.circular(20),
-                                          boxShadow: [
-                                            const BoxShadow(
-                                              color: Color(0xFFffffff),
-                                              offset: Offset(2, 2),
-                                              blurRadius: 10,
-                                              spreadRadius: 1,
-                                            ),
-                                            const BoxShadow(
-                                              color: Color(0xFFffffff),
-                                              offset: Offset(-2, -2),
-                                              blurRadius: 10,
-                                              spreadRadius: 1,
-                                            ),
-                                          ]
-                                      ),
-
-                                      height: 30,
-                                      child: Slider(
-                                        value: _currentExposureOffset,
-                                        min: _minAvailableExposureOffset,
-                                        max: _maxAvailableExposureOffset,
-                                        activeColor: Colors.white,
-                                        inactiveColor: Colors.white30,
-                                        onChanged: (value) async {
-                                          setState(() {
-                                            _currentExposureOffset = value;
-                                          });
-                                          await controller!
-                                              .setExposureOffset(value);
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    Expanded(
                                         child: Padding(
-                                          padding: EdgeInsets.fromLTRB(10, 10, 20, 10),
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text(
+                                            _currentExposureOffset
+                                                .toStringAsFixed(1) +
+                                                'x',
+                                            style: TextStyle(color: Colors.black),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: RotatedBox(
+                                        quarterTurns: 3,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                              color: Color(0xFF000000),
+                                              borderRadius: BorderRadius.circular(20),
+                                              boxShadow: [
+                                                const BoxShadow(
+                                                  color: Color(0xFFffffff),
+                                                  offset: Offset(2, 2),
+                                                  blurRadius: 10,
+                                                  spreadRadius: 1,
+                                                ),
+                                                const BoxShadow(
+                                                  color: Color(0xFFffffff),
+                                                  offset: Offset(-2, -2),
+                                                  blurRadius: 10,
+                                                  spreadRadius: 1,
+                                                ),
+                                              ]
+                                          ),
+
+                                          height: 30,
+                                          child: Slider(
+                                            value: _currentExposureOffset,
+                                            min: _minAvailableExposureOffset,
+                                            max: _maxAvailableExposureOffset,
+                                            activeColor: Colors.white,
+                                            inactiveColor: Colors.white30,
+                                            onChanged: (value) async {
+                                              setState(() {
+                                                _currentExposureOffset = value;
+                                              });
+                                              await controller!
+                                                  .setExposureOffset(value);
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                            child: Padding(
+                                              padding: EdgeInsets.fromLTRB(10, 10, 20, 10),
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                    color: Color(0xFF000000),
+                                                    borderRadius: BorderRadius.circular(20),
+                                                    boxShadow: [
+                                                      const BoxShadow(
+                                                        color: Color(0xFFffffff),
+                                                        offset: Offset(2, 2),
+                                                        blurRadius: 10,
+                                                        spreadRadius: 1,
+                                                      ),
+                                                      const BoxShadow(
+                                                        color: Color(0xFFffffff),
+                                                        offset: Offset(-2, -2),
+                                                        blurRadius: 10,
+                                                        spreadRadius: 1,
+                                                      ),
+                                                    ]
+                                                ),
+
+                                                child: Slider(
+                                                  value: _currentZoomLevel,
+                                                  min: _minAvailableZoom,
+                                                  max: _maxAvailableZoom,
+                                                  activeColor: Colors.white,
+                                                  inactiveColor: Colors.white30,
+                                                  onChanged: (value) async {
+                                                    setState(() {
+                                                      _currentZoomLevel = value;
+                                                    });
+                                                    await controller!
+                                                        .setZoomLevel(value);
+                                                  },
+                                                ),
+                                              ),
+                                            )
+                                        ),
+                                        Padding(
+                                          padding:
+                                          const EdgeInsets.only(right: 8.0),
                                           child: Container(
                                             decoration: BoxDecoration(
                                                 color: Color(0xFF000000),
@@ -686,393 +862,133 @@ class _backcameraState extends State<backCamera>{
                                                 ]
                                             ),
 
-                                            child: Slider(
-                                              value: _currentZoomLevel,
-                                              min: _minAvailableZoom,
-                                              max: _maxAvailableZoom,
-                                              activeColor: Colors.white,
-                                              inactiveColor: Colors.white30,
-                                              onChanged: (value) async {
-                                                setState(() {
-                                                  _currentZoomLevel = value;
-                                                });
-                                                await controller!
-                                                    .setZoomLevel(value);
-                                              },
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: Text(
+                                                _currentZoomLevel
+                                                    .toStringAsFixed(1) +
+                                                    'x',
+                                                style: TextStyle(
+                                                    color: Colors.white),
+                                              ),
                                             ),
                                           ),
-                                        )
+                                        ),
+                                      ],
                                     ),
-                                    Padding(
-                                      padding:
-                                      const EdgeInsets.only(right: 8.0),
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                            color: Color(0xFF000000),
-                                            borderRadius: BorderRadius.circular(20),
-                                            boxShadow: [
-                                              const BoxShadow(
-                                                color: Color(0xFFffffff),
-                                                offset: Offset(2, 2),
-                                                blurRadius: 10,
-                                                spreadRadius: 1,
-                                              ),
-                                              const BoxShadow(
-                                                color: Color(0xFFffffff),
-                                                offset: Offset(-2, -2),
-                                                blurRadius: 10,
-                                                spreadRadius: 1,
-                                              ),
-                                            ]
+
+                                    Column(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                      children: [
+
+
+
+                                        InkWell(
+                                            onTap: () {
+                                              print('clicked');
+                                              globals.dialogloading=false;
+
+                                              takePicture(context);
+
+
+
+
+                                            }, // Handle your onTap
+                                            child:Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                globals.dialogloading?Icon(Icons.circle,color: Colors.white,size: 80,):
+                                                TweenAnimationBuilder<double>(
+                                                  tween: Tween<double>(begin: 0.0, end: 1),
+                                                  duration: const Duration(seconds: 3),
+                                                  builder: (context, value, _) => Stack(
+                                                    alignment: Alignment.center,
+                                                    children: [
+
+                                                      Container(
+
+                                                        child: Text('Wait',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
+                                                      ),
+
+                                                      Container(
+
+                                                        height: 80,
+                                                        width: 80,
+
+                                                        child:  CircularProgressIndicator(
+
+                                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.redAccent),
+                                                          strokeWidth: 5.7,
+                                                          value: value,
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                )
+                                                //Text('Wait',style: GoogleFonts.gruppo(fontSize: 80,color: Colors.red,fontWeight: FontWeight.bold)),
+
+                                              ],
+                                            )
+
                                         ),
 
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(
-                                            _currentZoomLevel
-                                                .toStringAsFixed(1) +
-                                                'x',
-                                            style: TextStyle(
-                                                color: Colors.white),
-                                          ),
-                                        ),
-                                      ),
+
+                                      ],
                                     ),
-                                  ],
-                                ),
-
-                                Column(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                                  children: [
-
-
-
-                                    InkWell(
-                                      onTap: () {
-                                        print('clicked');
-                                        takePicture(context);
-
-
-
-                                      }, // Handle your onTap
-                                      child:
-                                      Stack(
-                                        alignment: Alignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.circle,
-                                            color: _isVideoCameraSelected
-                                                ? Colors.white
-                                                : Colors.white38,
-                                            size: 80,
-                                          ),
-                                          Icon(
-                                            Icons.circle,
-                                            color: _isVideoCameraSelected
-                                                ? Colors.red
-                                                : Colors.white,
-                                            size: 65,
-                                          ),
-                                          _isVideoCameraSelected &&
-                                              _isRecordingInProgress
-                                              ? Icon(
-                                            Icons.stop_rounded,
-                                            color: Colors.white,
-                                            size: 32,
-                                          )
-                                              : Container(),
-                                        ],
-                                      ),
-                                    ),
-
 
                                   ],
                                 ),
-
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
+                        ),
 
-                  ],
+                      ],
+                    ),
+                  )
+
+              )
+                  : Center(
+                child: Text(
+                  'NiGELLA SOFTWARES CAMERA LOADING',
+                  style: TextStyle(color: Colors.white),
                 ),
               )
-
-          )
-              : Center(
-            child: Text(
-              'NiGELLA SOFTWARES CAMERA LOADING',
-              style: TextStyle(color: Colors.white),
-            ),
-          )
-              : Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(),
-              Text(
-                'Permission denied',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
-              ),
-              SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  getPermissionStatus();
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Give permission',
+                  : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(),
+                  Text(
+                    'Permission denied',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 24,
                     ),
                   ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-
-
-late final String uploadUrl = 'http://'+globals.readIPURL!+':5000/api/recognize';
-Future<String?> uploadImage(filepath, url,BuildContext context) async {
-
-  // showAlertDialogserverresponsewait(context);
-  var request = http.MultipartRequest('POST', Uri.parse(url));
-  request.files.add(await http.MultipartFile.fromPath('image', filepath));
-  var res = await request.send();
-  if(res.statusCode==500){
-    print('no face dound');
-    // showAlertDialognofacedfound(context);
-
-  }
-  else{
-    //  Navigator.of(context, rootNavigator: true).pop();
-    var responseBytes = await res.stream.toBytes();
-    var responseString = utf8.decode(responseBytes);
-    resdata = responseString.toString();
-    _rere = resdata;
-    print(resdata.toString());
-    Map<String, dynamic> data = jsonDecode(_rere);
-    var token = data["image"];
-    var statusdata = data["image"];
-    String s = data["name"].toString().replaceAll("[", "");
-    nameofface =s.replaceAll("]", "");
-    if(nameofface=='unknown'){
-      facestatusknownUnknow = false;
-    }
-    else{
-      facestatusknownUnknow = true;
-    }
-    String imgval = statusdata.toString().replaceAll(' ', '');
-    String imgval1 = imgval.replaceAll("[", '');
-    String imgval2= imgval1.replaceAll(']', '');
-    imageofface = imgval2;
-    print("``````````````"+token.toString());
-    print("--->"+_rere);
-    scannedText = imgval2;
-
-    if(scannedText!=null){
-      ss = true;
-      // Navigator.of(context, rootNavigator: true).pop();
-
-      //  showAlertDialogserverresponse(context);
-    }
-    else{
-      print('NULLLL');
-    }
-    _previewAlertbackImage(context);
-    print(responseString);
-
-  }
-
-
-
-
-
-
-
-
-  return res.reasonPhrase;
-}
-
-_previewAlertbackImage(BuildContext context){
-  // textfield for url
-  // set up the buttons
-  final decodestring = base64Decode('$imageofface'
-      .split(',')
-      .last);
-  Uint8List encodeedimg = decodestring;
-
-
-  // set up the AlertDialog
-  AlertDialog alert = AlertDialog(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      title:  Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          GestureDetector(
-            onTap: () {
-              print('cross clicked');
-              Navigator.pop(context);
-            },
-            child:
-            Icon(Icons.cancel,color: Colors.white,size: 40,),
-          )
-        ],
-      ),
-
-      content: Container(
-        height: MediaQuery.of(context).size.height/2,
-        width: MediaQuery.of(context).size.width,
-        decoration: BoxDecoration(
-            color: Color(0xFFE000000),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              const BoxShadow(
-                color: Color(0xFFffffff),
-                offset: Offset(2, 2),
-                blurRadius: 10,
-                spreadRadius: 1,
-              ),
-              const BoxShadow(
-                color: Color(0xFFffffff),
-                offset: Offset(-2, -2),
-                blurRadius: 10,
-                spreadRadius: 1,
-              ),
-            ]
-        ),
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-              child: Container(
-                // height: 100,
-                child:  Align(
-                  alignment: Alignment.center,
-                  child: Container(
-
-                    child: Text('Face Recognition Result',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
-                  ),
-                ),
-              ),
-            ),
-
-
-            Padding(
-                padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                child:TweenAnimationBuilder<double>(
-                  tween: Tween<double>(begin: 0.0, end: 1),
-                  duration: const Duration(seconds: 3),
-                  builder: (context, value, _) => Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Container(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(100.0),
-                            child:   Image.file(
-                              File(finalPath),
-                              fit: BoxFit.cover,
-                              height: 200,
-                              width: 200,
-                            ),
-                          )
+                  SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      getPermissionStatus();
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        'Give permission',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                        ),
                       ),
-                      // you can replace
-                      Container(
-
-                        height: 200,
-                        width: 200,
-
-                        child:  CircularProgressIndicator(
-
-                          valueColor: facestatusknownUnknow?AlwaysStoppedAnimation<Color>(Colors.white):AlwaysStoppedAnimation<Color>(Colors.red),
-                          strokeWidth: 5.7,
-                          value: value,
-                        ),
-                      )
-                    ],
+                    ),
                   ),
-                )
+                ],
+              ),
             ),
+          )
+      );
 
+  }
 
-
-            Padding(
-                padding: EdgeInsets.fromLTRB(15, 15, 15, 15),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                        decoration: BoxDecoration(
-                            color: Color(0xFF000000),
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              const BoxShadow(
-                                color: Color(0xFFffffff),
-                                offset: Offset(2, 2),
-                                blurRadius: 10,
-                                spreadRadius: 1,
-                              ),
-                              const BoxShadow(
-                                color: Color(0xFFffffff),
-                                offset: Offset(-2, -2),
-                                blurRadius: 10,
-                                spreadRadius: 1,
-                              ),
-                            ]
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(5, 5, 20, 5),
-                          child: Text('Name: $nameofface',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
-                        )
-                    ),
-                    SizedBox(
-                      width: 40,
-                    ),
-
-
-                  ],
-                )
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  child: facestatusknownUnknow?Text('Found',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)
-                    ,):Text('Not Found',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
-                )
-              ],
-            ),
-
-
-          ],
-        ),
-      )
-
-  );
-
-  // show the dialog
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return alert;
-    },
-  );
 }
+
