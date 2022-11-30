@@ -43,6 +43,7 @@ late String serverstatusstart='';
 late Stopwatch stopwatch;
 String? readIPURL;
 bool dialogloading = true;
+late String verifiedName='';
 
 
 late String imagelabelname ='';

@@ -13,6 +13,7 @@ import 'package:ai_face/const/globals.dart' as globals;
 
 
 import 'enrollment.dart';
+import 'face_found_History.dart';
 import 'verifyBackcamera.dart';
 
 bool wifistatus = false;
@@ -445,7 +446,28 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                 showAlertDialogForURL(context);
               },
             ),
+            ExpansionTile(
+              title: Text("History"),
+              children: <Widget>[
+                ListTile(
+                  leading: const Icon(Icons.face),
+                  title: const Text('Found Face\'s'),
+                  onTap: () async {
 
+                    Navigator.pop(context);
+                    movetofacefoundhistory(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.face_outlined),
+                  title: const Text('Unknown Face\'s'),
+                  onTap: () async {
+
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('LogOut'),
@@ -831,5 +853,10 @@ void movetofrontcamera(BuildContext context){
 
 void  movetobackcamera(BuildContext context){
   Navigator.of(context).push(MaterialPageRoute(builder: (context) => backCamera()));
+
+}
+
+void movetofacefoundhistory(BuildContext context){
+  Navigator.of(context).push(MaterialPageRoute(builder: (context) => facFoundHistory()));
 
 }

@@ -1,5 +1,7 @@
 
 
+import 'dart:math';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +12,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 
 import 'package:camera/camera.dart';
@@ -25,6 +28,8 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'package:toast/toast.dart';
 
+import '../api/insert_verification_record.dart';
+import '../api/update_verification_record.dart';
 import '../main.dart';
 import '../utils/dialogAlerts.dart';
 
@@ -36,6 +41,8 @@ late String resdata='';
 late String imgpatfhforalert;
 late String nameofface='';
 late String _rere='';
+
+
 
 late String imageofface = '';
 late File file1;
@@ -53,7 +60,9 @@ class verifyFrontCamera extends StatefulWidget{
 }
 class _verifyfrontCameraState extends State<verifyFrontCamera>{
   CameraController? controller;
-
+  var currentTime;
+  Random random = new Random();
+  String holdRanvalue='';
 
 
   // Initial values
@@ -66,6 +75,7 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
   double _maxAvailableExposureOffset = 0.0;
   double _minAvailableZoom = 1.0;
   double _maxAvailableZoom = 1.0;
+
 
   // Current values
   double _currentZoomLevel = 1.0;
@@ -83,7 +93,7 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
     var status = await Permission.camera.status;
 
     if (status.isGranted) {
-      log('Camera Permission: GRANTED');
+      //log('Camera Permission: GRANTED');
       setState(() {
         _isCameraPermissionGranted = true;
       });
@@ -91,7 +101,7 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
       onNewCameraSelected(cameras[1]);
       refreshAlreadyCapturedImages();
     } else {
-      log('Camera Permission: DENIED');
+     // log('Camera Permission: DENIED');
     }
   }
 
@@ -119,6 +129,9 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
     }
   }
 
+
+
+
   Future<XFile?> takePicture(BuildContext context) async {
     final CameraController? cameraController = controller;
 
@@ -142,7 +155,26 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
 
 
       print(tmpFile.path);
+      var now = new DateTime.now();
+      currentTime = DateFormat.jm().format(now);
+      var formatter = new DateFormat('MM');
+      var formattertext = new DateFormat('MMM');
+      var formatteryear = new DateFormat('yyyy');
+      var formatterdat = new DateFormat('dd');
+      String currentMOnth = formatter.format(now);
+      String currentYEar =  formatteryear.format(now);
+      String currentday = formatterdat.format(now);
+      String currentdate = currentday;
+      String todaysdate = currentdate+'/'+currentMOnth+'/'+currentYEar;
+      String newtodaysdate = currentdate+'-'+currentMOnth+'-'+currentYEar;
+      setState(() {
+        int randomNumber = random.nextInt(1000); // from 0 upto 990 included
+        holdRanvalue = randomNumber.toString();
+      });
+      print('current time is --->'+holdRanvalue+' '+currentTime.toString()+newtodaysdate);
+      insertVerificationRecord(context,holdRanvalue,currentTime.toString(),newtodaysdate);
       uploadImage(finalPath, uploadUrl, context);
+
 
 
 
@@ -170,7 +202,20 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
       print('no face found');
 
       setState(() {
-
+        var now = new DateTime.now();
+        final updatedCurrentTime = DateFormat.jm().format(now);
+        var formatter = new DateFormat('MM');
+        var formattertext = new DateFormat('MMM');
+        var formatteryear = new DateFormat('yyyy');
+        var formatterdat = new DateFormat('dd');
+        String currentMOnth = formatter.format(now);
+        String currentYEar =  formatteryear.format(now);
+        String currentday = formatterdat.format(now);
+        String currentdate = currentday;
+        String todaysdate = currentdate+'/'+currentMOnth+'/'+currentYEar;
+        String newtodaysdate = currentdate+'-'+currentMOnth+'-'+currentYEar;
+        print('updated time is --->'+holdRanvalue+' '+updatedCurrentTime+'no face found');
+        updateVerificationRecord(context,holdRanvalue,updatedCurrentTime,'no face found');
         globals.dialogloading=true;
         dialogAlerts(context);
       });
@@ -190,6 +235,7 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
       var statusdata = data["image"];
       String s = data["name"].toString().replaceAll("[", "");
       nameofface =s.replaceAll("]", "");
+      globals.verifiedName = nameofface;
       if(nameofface=='unknown'){
 
         facestatusknownUnknow = false;
@@ -216,6 +262,12 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
         print('NULLLL');
       }
       setState(() {
+        var now = new DateTime.now();
+        final updatedCurrentTime1 = DateFormat.jm().format(now);
+
+
+        print('updated time is --->'+holdRanvalue+' '+updatedCurrentTime1+nameofface);
+        updateVerificationRecord(context,holdRanvalue,updatedCurrentTime1,nameofface);
         globals.dialogloading=true;
         _previewImageFrontAlert(context);
         print(responseString);
