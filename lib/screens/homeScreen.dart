@@ -451,21 +451,14 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
               children: <Widget>[
                 ListTile(
                   leading: const Icon(Icons.face),
-                  title: const Text('Found Face\'s'),
+                  title: const Text('Verification History'),
                   onTap: () async {
 
                     Navigator.pop(context);
                     movetofacefoundhistory(context);
                   },
                 ),
-                ListTile(
-                  leading: const Icon(Icons.face_outlined),
-                  title: const Text('Unknown Face\'s'),
-                  onTap: () async {
 
-                    Navigator.pop(context);
-                  },
-                ),
               ],
             ),
             ListTile(

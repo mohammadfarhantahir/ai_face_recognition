@@ -84,18 +84,6 @@ class facefoundState extends State<facFoundHistory>{
 
                   )
 
-
-
-
-                  /*GoogleMap(
-                      mapType: MapType.hybrid,
-                      initialCameraPosition: _kGooglePlex,
-                      onMapCreated: (GoogleMapController controller) {
-                        _controller.complete(controller);
-                      },
-                    )*/
-
-
               ],
 
           )
@@ -133,7 +121,7 @@ class facefoundState extends State<facFoundHistory>{
         elevation: 0,
         bottom: PreferredSize(
             child:Container(
-              child:    Text('Total Actions : '+_faceFound.length.toString() ,style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
+              child:    Text('Total Verifications : '+_faceFound.length.toString() ,style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
             ),
             preferredSize: Size.fromHeight(0)
         ),
