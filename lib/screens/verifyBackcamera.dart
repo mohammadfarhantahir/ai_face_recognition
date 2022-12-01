@@ -538,7 +538,7 @@ class _backcameraState extends State<backCamera>{
   @override
   void initState() {
     // Hide the status bar in Android
-    SystemChrome.setEnabledSystemUIOverlays([]);
+    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
     getPermissionStatus();
     super.initState();
   }
@@ -605,6 +605,7 @@ class _backcameraState extends State<backCamera>{
             child:
             Scaffold(
               appBar: AppBar(
+
                 title: Text('Back Camera Screen',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
                 leading: IconButton(
                   icon: Icon(Icons.arrow_back, color: Colors.white),

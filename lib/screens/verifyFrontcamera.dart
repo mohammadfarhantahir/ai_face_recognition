@@ -538,7 +538,7 @@ class _verifyfrontCameraState extends State<verifyFrontCamera>{
   @override
   void initState() {
     // Hide the status bar in Android
-    SystemChrome.setEnabledSystemUIOverlays([]);
+    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
     getPermissionStatus();
     super.initState();
   }

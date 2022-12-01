@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 List<CameraDescription> cameras = [];
 Future<void> main() async {
 
+
   try {
     WidgetsFlutterBinding.ensureInitialized();
 

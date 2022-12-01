@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:ai_face/screens/verifyFrontcamera.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
@@ -368,6 +369,7 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
 
   @override
   void initState() {
+    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
 
     super.initState();
 
@@ -410,6 +412,7 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
     // TODO: implement build
     return Scaffold(
       appBar: AppBar(
+
         backgroundColor: Colors.black,
       ),
       drawer: Drawer(

@@ -36,7 +36,7 @@ class loginScreenState extends State<loginScreen>{
                 FittedBox(
                 fit: BoxFit.fitWidth,
                 child:
-                  Text('NiGELLA SOFTWARES\nFace Recognition System',style: GoogleFonts.gruppo(fontSize: 38,color: Colors.white,fontWeight: FontWeight.bold),
+                  Text('SWIMS-BIO\nFace Recognition System',style: GoogleFonts.gruppo(fontSize: 38,color: Colors.white,fontWeight: FontWeight.bold),
                   ),),
                   SizedBox(
                     height: 20,
