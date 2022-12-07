@@ -44,7 +44,18 @@ late Stopwatch stopwatch;
 String? readIPURL;
 bool dialogloading = true;
 late String verifiedName='';
+bool idcardopeningstatus= false;
+late File tmpFile;
 
+late String scanNationality='';
+late String scanGender='';
+late String scanFirstName='';
+late String scanLastName='';
+late String pathimagetobeusedinpdf='';
+late String foldercheck='';
+String? username='';
+late String password ='';
+String imagenameforenrollment='';
 
 late String imagelabelname ='';
 String currenttime = DateFormat.jm().format(now);

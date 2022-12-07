@@ -16,7 +16,7 @@ Future updateVerificationRecord(BuildContext context,uId,time,verificationResult
 
 
   // Store all data with Param Name.
-  var data = {'uId':uId,'verification_by':'farhan@nigellasoftwares.com','verification_end_time': time,  'verification_result' : verificationResult};
+  var data = {'uId':uId,'verification_by':globals.username,'verification_end_time': time,  'verification_result' : verificationResult};
 
   // Starting Web Call with data.
 

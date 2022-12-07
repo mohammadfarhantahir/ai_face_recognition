@@ -70,7 +70,7 @@ class _FaceDetectorViewState extends State<FaceDetectorView> {
         },
         child:
         CameraView(
-          title: 'Enroll Face Camera',
+          title: 'Enroll Face',
           customPaint: _customPaint,
           text: _text,
           onImage: (inputImage) {

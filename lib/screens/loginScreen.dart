@@ -2,15 +2,74 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../utils/dialogAlerts.dart';
 import 'homeScreen.dart';
+import 'dart:convert';
+import 'package:http/http.dart';
+import 'package:ai_face/const/globals.dart' as globals;
 
+
+final usernamenameController = TextEditingController();
+final passwordController = TextEditingController();
 class loginScreenMain extends StatefulWidget{
 
   State<loginScreenMain> createState()=> loginScreenState();
 }
 
+
+
 class loginScreenState extends State<loginScreenMain>{
+
+
+
+  addStringToSF() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      prefs.setString('username', usernamenameController.text.toString());
+    });
+
+  }
+
+  void login(String username , password) async {
+
+    try{
+
+      Response response = await get(
+        Uri.parse('https://face.ladang.tech/face-recognition-webservice-master/mobilelogin.php?username='+usernamenameController.text.toString()+'&&password='+passwordController.text.toString()),
+
+      );
+
+      if(response.statusCode == 200){
+
+        var data = jsonDecode(response.body.toString());
+        print(data.toString());
+        if(data.toString()=='Login Matched'){
+          setState(() {
+            addStringToSF();
+            movetoHomescreen(context);
+            print('now can move to dashboard');
+          });
+
+        }
+        else{
+          setState(() {
+            dialogAlertslforlogin(context);
+            print('invalid username and password');
+          });
+
+        }
+
+
+      }else {
+        print('failed');
+      }
+    }catch(e){
+      print(e.toString());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
@@ -50,7 +109,7 @@ class loginScreenState extends State<loginScreenMain>{
                     child: TextField(
                       style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.black),
                       //keyboardType: TextInputType.numberWithOptions(),
-                     // controller: urlController,
+                      controller: usernamenameController,
                       decoration: InputDecoration(
                         floatingLabelBehavior: FloatingLabelBehavior.never,
                       //  hintText: 'Email',
@@ -60,9 +119,7 @@ class loginScreenState extends State<loginScreenMain>{
                         labelText: 'Email',
                         labelStyle: GoogleFonts.didactGothic(fontSize: 18,color: Colors.black),
                       ),
-                      onChanged: (text) {
 
-                      },
                     ),
                   )
               ),
@@ -101,7 +158,7 @@ class loginScreenState extends State<loginScreenMain>{
                       obscureText: true,
                       enableSuggestions: false,
                       autocorrect: false,
-                      // controller: urlController,
+                       controller: passwordController,
                       decoration: InputDecoration(
                         floatingLabelBehavior: FloatingLabelBehavior.never,
                        // hintText: 'Password',
@@ -111,9 +168,7 @@ class loginScreenState extends State<loginScreenMain>{
                         labelText: 'Password',
                         labelStyle: GoogleFonts.didactGothic(fontSize: 18,color: Colors.black),
                       ),
-                      onChanged: (text) {
 
-                      },
                     ),
                   )
               ),
@@ -140,7 +195,16 @@ class loginScreenState extends State<loginScreenMain>{
             GestureDetector(
               onTap: () {
                 print('login clicked');
-                movetoHomescreen(context);
+                if(usernamenameController.text.toString().isEmpty || passwordController.text.toString().isEmpty){
+                  print('cannot be empty');
+                  dialogAlertslforloginempty(context);
+                }else{
+                  globals.username = usernamenameController.text.toString();
+                  globals.password = passwordController.text.toString();
+                  login(usernamenameController.text.toString(),passwordController.text.toString());
+                }
+
+                //movetoHomescreen(context);
               },
               child: Container(
                 width: MediaQuery.of(context).size.width/1.5,
@@ -186,5 +250,6 @@ class loginScreenState extends State<loginScreenMain>{
 }
 
 void movetoHomescreen(BuildContext context){
-  Navigator.of(context).push(MaterialPageRoute(builder: (context) => homeScreen()));
+ // Navigator.of(context).push(MaterialPageRoute(builder: (context) => homeScreen()));
+  Navigator.pushNamed(context, '/homescreen');
 }

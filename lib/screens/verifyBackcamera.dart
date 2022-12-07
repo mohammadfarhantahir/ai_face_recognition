@@ -1,5 +1,6 @@
 
 
+import 'dart:async';
 import 'dart:math';
 
 import 'package:camera/camera.dart';
@@ -41,8 +42,11 @@ late String resdata='';
 late String imgpatfhforalert;
 late String nameofface='';
 late String _rere='';
+bool camPrevstatus = true;
 
 
+late Timer _timer;
+int _start = 0;
 
 late String imageofface = '';
 late File file1;
@@ -63,7 +67,7 @@ class _backcameraState extends State<backCamera>{
   var currentTime;
   Random random = new Random();
   String holdRanvalue='';
-
+  late Stopwatch stopwatch;
 
   // Initial values
   bool _isCameraInitialized = false;
@@ -132,6 +136,7 @@ class _backcameraState extends State<backCamera>{
 
 
 
+
   Future<XFile?> takePicture(BuildContext context) async {
     final CameraController? cameraController = controller;
 
@@ -149,7 +154,7 @@ class _backcameraState extends State<backCamera>{
       File rotatedImage =
       await FlutterExifRotation.rotateAndSaveImage(path: file1.path);
       print('rotatwed image --->'+rotatedImage.path);
-
+      camPrevstatus = false;
 
       finalPath = rotatedImage.path;
 
@@ -170,6 +175,7 @@ class _backcameraState extends State<backCamera>{
       setState(() {
         int randomNumber = random.nextInt(1000); // from 0 upto 990 included
         holdRanvalue = randomNumber.toString();
+
       });
       print('current time is --->'+holdRanvalue+' '+currentTime.toString()+newtodaysdate);
       insertVerificationRecord(context,holdRanvalue,currentTime.toString(),newtodaysdate);
@@ -198,10 +204,20 @@ class _backcameraState extends State<backCamera>{
     var request = http.MultipartRequest('POST', Uri.parse(url));
     request.files.add(await http.MultipartFile.fromPath('image', filepath));
     var res = await request.send();
-    if(res.statusCode==500){
-      print('no face found');
 
+    var responseBytes = await res.stream.toBytes();
+    var responseString = utf8.decode(responseBytes);
+    resdata = responseString.toString();
+    _rere = resdata;
+    print(resdata.toString());
+    Map<String, dynamic> data = jsonDecode(_rere);
+
+
+    String s = data["Name"].toString().replaceAll("[", "").replaceAll(']', '');
+    if(s.isEmpty){
+      print('value is empty');
       setState(() {
+
         var now = new DateTime.now();
         final updatedCurrentTime = DateFormat.jm().format(now);
         var formatter = new DateFormat('MM');
@@ -217,51 +233,67 @@ class _backcameraState extends State<backCamera>{
         print('updated time is --->'+holdRanvalue+' '+updatedCurrentTime+'no face found');
         updateVerificationRecord(context,holdRanvalue,updatedCurrentTime,'no face found');
         globals.dialogloading=true;
+        controller!.resumePreview();
+        camPrevstatus = true;
         dialogAlerts(context);
       });
 
-      // showAlertDialognofacedfound(context);
-
     }
     else{
-
-      var responseBytes = await res.stream.toBytes();
-      var responseString = utf8.decode(responseBytes);
-      resdata = responseString.toString();
-      _rere = resdata;
-      print(resdata.toString());
-      Map<String, dynamic> data = jsonDecode(_rere);
-      var token = data["image"];
-      var statusdata = data["image"];
-      String s = data["name"].toString().replaceAll("[", "");
-      nameofface =s.replaceAll("]", "");
-      globals.verifiedName = nameofface;
+      final split = s.split(',');
+      final Map<int, String> values = {
+        for (int i = 0; i < split.length; i++)
+          i: split[i]
+      };
+      final vaa1 = values[0];
+      print('----->splitedd value'+vaa1.toString());
+      nameofface =vaa1.toString();
+      globals.verifiedName = vaa1.toString();
       if(nameofface=='unknown'){
+       setState(() {
 
-        facestatusknownUnknow = false;
+         controller!.resumePreview();
+         camPrevstatus = true;
+         facestatusknownUnknow = false;
+       });
+      }
+      else if(nameofface=='[]'){
+        print('no face found');
+
+        setState(() {
+
+          var now = new DateTime.now();
+          final updatedCurrentTime = DateFormat.jm().format(now);
+          var formatter = new DateFormat('MM');
+          var formattertext = new DateFormat('MMM');
+          var formatteryear = new DateFormat('yyyy');
+          var formatterdat = new DateFormat('dd');
+          String currentMOnth = formatter.format(now);
+          String currentYEar =  formatteryear.format(now);
+          String currentday = formatterdat.format(now);
+          String currentdate = currentday;
+          String todaysdate = currentdate+'/'+currentMOnth+'/'+currentYEar;
+          String newtodaysdate = currentdate+'-'+currentMOnth+'-'+currentYEar;
+          print('updated time is --->'+holdRanvalue+' '+updatedCurrentTime+'no face found');
+          updateVerificationRecord(context,holdRanvalue,updatedCurrentTime,'no face found');
+          globals.dialogloading=true;
+          controller!.pausePreview();
+          camPrevstatus = true;
+          dialogAlerts(context);
+        });
+
+
       }
       else{
 
         facestatusknownUnknow = true;
       }
-      String imgval = statusdata.toString().replaceAll(' ', '');
-      String imgval1 = imgval.replaceAll("[", '');
-      String imgval2= imgval1.replaceAll(']', '');
-      imageofface = imgval2;
-      print("``````````````"+token.toString());
+
       print("--->"+_rere);
-      scannedText = imgval2;
-
-      if(scannedText!=null){
-        ss = true;
-        // Navigator.of(context, rootNavigator: true).pop();
 
 
-      }
-      else{
-        print('NULLLL');
-      }
       setState(() {
+
         var now = new DateTime.now();
         final updatedCurrentTime1 = DateFormat.jm().format(now);
 
@@ -269,6 +301,8 @@ class _backcameraState extends State<backCamera>{
         print('updated time is --->'+holdRanvalue+' '+updatedCurrentTime1+nameofface);
         updateVerificationRecord(context,holdRanvalue,updatedCurrentTime1,nameofface);
         globals.dialogloading=true;
+        controller!.resumePreview();
+        camPrevstatus = true;
         _previewImageFrontAlert(context);
         print(responseString);
       });
@@ -283,7 +317,11 @@ class _backcameraState extends State<backCamera>{
 
 
 
-    return res.reasonPhrase;
+
+
+
+
+  return res.reasonPhrase;
   }
 
   _previewImageFrontAlert(BuildContext context) {
@@ -316,7 +354,7 @@ class _backcameraState extends State<backCamera>{
         ),
 
         content: Container(
-          height: MediaQuery.of(context).size.height/2,
+          height: MediaQuery.of(context).size.height,
           width: MediaQuery.of(context).size.width,
           decoration: BoxDecoration(
               color: Color(0xFFE000000),
@@ -418,7 +456,7 @@ class _backcameraState extends State<backCamera>{
                           ),
                           child: Padding(
                             padding: EdgeInsets.fromLTRB(5, 5, 20, 5),
-                            child: Text('Name: $nameofface',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
+                            child: Text('Name/id: $nameofface',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
                           )
                       ),
                       SizedBox(
@@ -576,190 +614,255 @@ class _backcameraState extends State<backCamera>{
       SafeArea(
         // minimum: const EdgeInsets.only(bottom: 15.00),
 
-          child: WillPopScope(
-            onWillPop:  () async {
+          child:  Scaffold(
+            appBar: AppBar(
 
-              count++;
-              if(count==1){
+              title: Text('Back Camera Screen',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              flexibleSpace: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: <Color>[Color(0xff000000), Color(0xff000000)]),
 
-
-
-
-
-                // showaip(context);
-
-
-              }
-              if(count==2){
-
-
-              }
-              else{
-                // Toast.show('Back button press'+count.toString(), context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
-              }
-              // Do something here
-              print("After clicking the Android Back Button");
-
-              return false;
-            },
-            child:
-            Scaffold(
-              appBar: AppBar(
-
-                title: Text('Back Camera Screen',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
-                leading: IconButton(
-                  icon: Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                flexibleSpace: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: <Color>[Color(0xff000000), Color(0xff000000)]),
-
-                  ),
                 ),
               ),
-              backgroundColor: Colors.black,
-              body: _isCameraPermissionGranted
-                  ? _isCameraInitialized
-                  ? Container(
-                  decoration: BoxDecoration(
-                      color: Color(0xFF000000),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        const BoxShadow(
-                          color: Color(0xFFffffff),
-                          offset: Offset(2, 2),
-                          blurRadius: 10,
-                          spreadRadius: 1,
-                        ),
-                        const BoxShadow(
-                          color: Color(0xFFffffff),
-                          offset: Offset(-2, -2),
-                          blurRadius: 10,
-                          spreadRadius: 1,
-                        ),
-                      ]
-                  ),
+            ),
+            backgroundColor: Colors.black,
+            body: _isCameraPermissionGranted
+                ? _isCameraInitialized
+                ? Container(
+                decoration: BoxDecoration(
+                    color: Color(0xFF000000),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      const BoxShadow(
+                        color: Color(0xFFffffff),
+                        offset: Offset(2, 2),
+                        blurRadius: 10,
+                        spreadRadius: 1,
+                      ),
+                      const BoxShadow(
+                        color: Color(0xFFffffff),
+                        offset: Offset(-2, -2),
+                        blurRadius: 10,
+                        spreadRadius: 1,
+                      ),
+                    ]
+                ),
 
-                  margin: EdgeInsets.all(10) ,
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                    child:   Column(
-                      children: [
-                        AspectRatio(
-                          aspectRatio: 1 / controller!.value.aspectRatio,
-                          child: Stack(
-                            children: [
+                margin: EdgeInsets.all(10) ,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                  child:   Column(
+                    children: [
+                      AspectRatio(
+                        aspectRatio: 1 / controller!.value.aspectRatio,
+                        child: Stack(
+                          children: [
 
-                              CameraPreview(
-                                controller!,
-                                child: LayoutBuilder(builder:
-                                    (BuildContext context,
-                                    BoxConstraints constraints) {
-                                  return GestureDetector(
-                                    behavior: HitTestBehavior.opaque,
-                                    onTapDown: (details) =>
-                                        onViewFinderTap(details, constraints),
-                                  );
-                                }),
+                            camPrevstatus?CameraPreview(
+                              controller!,
+                              child: LayoutBuilder(builder:
+                                  (BuildContext context,
+                                  BoxConstraints constraints) {
+                                return GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTapDown: (details) =>
+                                      onViewFinderTap(details, constraints),
+                                );
+                              }),
+                            ):Center(
+
+                              child: Image.asset(
+                                'assets/images/circle_glowing.gif',
+                                height: MediaQuery.of(context).size.height,
+                                width: MediaQuery.of(context).size.width,
+                              ), // Image.asset
+
+                              // Text('Recognization started',style: GoogleFonts.gruppo(fontSize: 38,color: Colors.white,fontWeight: FontWeight.bold)),
+                            ),
+
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                16.0,
+                                8.0,
+                                16.0,
+                                8.0,
                               ),
-
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                  16.0,
-                                  8.0,
-                                  16.0,
-                                  8.0,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Align(
-                                      alignment: Alignment.topRight,
-                                      child: Container(
-                                          decoration: BoxDecoration(
-                                            color: Colors.black87,
-                                            borderRadius:
-                                            BorderRadius.circular(10.0),
-                                          ),
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                                color: Color(0xFF000000),
-                                                borderRadius: BorderRadius.circular(8),
-                                                boxShadow: [
-                                                  const BoxShadow(
-                                                    color: Color(0xFFffffff),
-                                                    offset: Offset(2, 2),
-                                                    blurRadius: 10,
-                                                    spreadRadius: 1,
-                                                  ),
-                                                  const BoxShadow(
-                                                    color: Color(0xFFffffff),
-                                                    offset: Offset(-2, -2),
-                                                    blurRadius: 10,
-                                                    spreadRadius: 1,
-                                                  ),
-                                                ]
-                                            ),
-                                            child:  DropdownButton<ResolutionPreset>(
-                                              dropdownColor: Colors.black87,
-                                              underline: Container(),
-                                              value: currentResolutionPreset,
-                                              items: [
-                                                for (ResolutionPreset preset
-                                                in resolutionPresets)
-                                                  DropdownMenuItem(
-                                                    child: Text(
-                                                      preset
-                                                          .toString()
-                                                          .split('.')[1]
-                                                          .toUpperCase(),
-                                                      style: TextStyle(
-                                                          color: Colors.white),
-                                                    ),
-                                                    value: preset,
-                                                  )
-                                              ],
-                                              onChanged: (value) {
-                                                setState(() {
-                                                  currentResolutionPreset = value!;
-                                                  _isCameraInitialized = false;
-                                                });
-                                                onNewCameraSelected(
-                                                    controller!.description);
-                                              },
-                                              hint: Text("Select item"),
-                                            ),
-                                          )
-                                      ),
-                                    ),
-                                    // Spacer(),
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          right: 8.0, top: 16.0),
-                                      child: Container(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Align(
+                                    alignment: Alignment.topRight,
+                                    child: Container(
                                         decoration: BoxDecoration(
-                                          color: Colors.white,
+                                          color: Colors.black87,
                                           borderRadius:
                                           BorderRadius.circular(10.0),
                                         ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(
-                                            _currentExposureOffset
-                                                .toStringAsFixed(1) +
-                                                'x',
-                                            style: TextStyle(color: Colors.black),
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                              color: Color(0xFF000000),
+                                              borderRadius: BorderRadius.circular(8),
+                                              boxShadow: [
+                                                const BoxShadow(
+                                                  color: Color(0xFFffffff),
+                                                  offset: Offset(2, 2),
+                                                  blurRadius: 10,
+                                                  spreadRadius: 1,
+                                                ),
+                                                const BoxShadow(
+                                                  color: Color(0xFFffffff),
+                                                  offset: Offset(-2, -2),
+                                                  blurRadius: 10,
+                                                  spreadRadius: 1,
+                                                ),
+                                              ]
                                           ),
+                                          child:  DropdownButton<ResolutionPreset>(
+                                            dropdownColor: Colors.black87,
+                                            underline: Container(),
+                                            value: currentResolutionPreset,
+                                            items: [
+                                              for (ResolutionPreset preset
+                                              in resolutionPresets)
+                                                DropdownMenuItem(
+                                                  child: Text(
+                                                    preset
+                                                        .toString()
+                                                        .split('.')[1]
+                                                        .toUpperCase(),
+                                                    style: TextStyle(
+                                                        color: Colors.white),
+                                                  ),
+                                                  value: preset,
+                                                )
+                                            ],
+                                            onChanged: (value) {
+                                              setState(() {
+                                                currentResolutionPreset = value!;
+                                                _isCameraInitialized = false;
+                                              });
+                                              onNewCameraSelected(
+                                                  controller!.description);
+                                            },
+                                            hint: Text("Select item"),
+                                          ),
+                                        )
+                                    ),
+                                  ),
+                                  // Spacer(),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        right: 8.0, top: 16.0),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius:
+                                        BorderRadius.circular(10.0),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          _currentExposureOffset
+                                              .toStringAsFixed(1) +
+                                              'x',
+                                          style: TextStyle(color: Colors.black),
                                         ),
                                       ),
                                     ),
-                                    Expanded(
-                                      child: RotatedBox(
-                                        quarterTurns: 3,
+                                  ),
+                                  Expanded(
+                                    child: RotatedBox(
+                                      quarterTurns: 3,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                            color: Color(0xFF000000),
+                                            borderRadius: BorderRadius.circular(20),
+                                            boxShadow: [
+                                              const BoxShadow(
+                                                color: Color(0xFFffffff),
+                                                offset: Offset(2, 2),
+                                                blurRadius: 10,
+                                                spreadRadius: 1,
+                                              ),
+                                              const BoxShadow(
+                                                color: Color(0xFFffffff),
+                                                offset: Offset(-2, -2),
+                                                blurRadius: 10,
+                                                spreadRadius: 1,
+                                              ),
+                                            ]
+                                        ),
+
+                                        height: 30,
+                                        child: Slider(
+                                          value: _currentExposureOffset,
+                                          min: _minAvailableExposureOffset,
+                                          max: _maxAvailableExposureOffset,
+                                          activeColor: Colors.white,
+                                          inactiveColor: Colors.white30,
+                                          onChanged: (value) async {
+                                            setState(() {
+                                              _currentExposureOffset = value;
+                                            });
+                                            await controller!
+                                                .setExposureOffset(value);
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                          child: Padding(
+                                            padding: EdgeInsets.fromLTRB(10, 10, 20, 10),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                  color: Color(0xFF000000),
+                                                  borderRadius: BorderRadius.circular(20),
+                                                  boxShadow: [
+                                                    const BoxShadow(
+                                                      color: Color(0xFFffffff),
+                                                      offset: Offset(2, 2),
+                                                      blurRadius: 10,
+                                                      spreadRadius: 1,
+                                                    ),
+                                                    const BoxShadow(
+                                                      color: Color(0xFFffffff),
+                                                      offset: Offset(-2, -2),
+                                                      blurRadius: 10,
+                                                      spreadRadius: 1,
+                                                    ),
+                                                  ]
+                                              ),
+
+                                              child: Slider(
+                                                value: _currentZoomLevel,
+                                                min: _minAvailableZoom,
+                                                max: _maxAvailableZoom,
+                                                activeColor: Colors.white,
+                                                inactiveColor: Colors.white30,
+                                                onChanged: (value) async {
+                                                  setState(() {
+                                                    _currentZoomLevel = value;
+                                                  });
+                                                  await controller!
+                                                      .setZoomLevel(value);
+                                                },
+                                              ),
+                                            ),
+                                          )
+                                      ),
+                                      Padding(
+                                        padding:
+                                        const EdgeInsets.only(right: 8.0),
                                         child: Container(
                                           decoration: BoxDecoration(
                                               color: Color(0xFF000000),
@@ -780,213 +883,136 @@ class _backcameraState extends State<backCamera>{
                                               ]
                                           ),
 
-                                          height: 30,
-                                          child: Slider(
-                                            value: _currentExposureOffset,
-                                            min: _minAvailableExposureOffset,
-                                            max: _maxAvailableExposureOffset,
-                                            activeColor: Colors.white,
-                                            inactiveColor: Colors.white30,
-                                            onChanged: (value) async {
-                                              setState(() {
-                                                _currentExposureOffset = value;
-                                              });
-                                              await controller!
-                                                  .setExposureOffset(value);
-                                            },
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              _currentZoomLevel
+                                                  .toStringAsFixed(1) +
+                                                  'x',
+                                              style: TextStyle(
+                                                  color: Colors.white),
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                            child: Padding(
-                                              padding: EdgeInsets.fromLTRB(10, 10, 20, 10),
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                    color: Color(0xFF000000),
-                                                    borderRadius: BorderRadius.circular(20),
-                                                    boxShadow: [
-                                                      const BoxShadow(
-                                                        color: Color(0xFFffffff),
-                                                        offset: Offset(2, 2),
-                                                        blurRadius: 10,
-                                                        spreadRadius: 1,
+                                    ],
+                                  ),
+
+                                  Column(
+                                    mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                    children: [
+
+
+
+                                      InkWell(
+                                          onTap: () {
+                                            print('clicked');
+                                            globals.dialogloading=false;
+
+                                            setState(() {
+
+                                              takePicture(context).then((value) =>
+
+                                                  controller!.pausePreview()
+
+                                              );
+                                            });
+
+
+
+
+                                          }, // Handle your onTap
+                                          child:Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              globals.dialogloading?Icon(Icons.circle,color: Colors.white,size: 80,):
+                                              TweenAnimationBuilder<double>(
+                                                tween: Tween<double>(begin: 0.0, end: 1),
+                                                duration: const Duration(seconds: 3),
+                                                builder: (context, value, _) => Stack(
+                                                  alignment: Alignment.center,
+                                                  children: [
+
+                                                    Container(
+
+                                                      child: Text('Wait',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
+                                                    ),
+
+                                                    Container(
+
+                                                      height: 80,
+                                                      width: 80,
+
+                                                      child:  CircularProgressIndicator(
+
+                                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.redAccent),
+                                                        strokeWidth: 5.7,
+                                                        value: value,
                                                       ),
-                                                      const BoxShadow(
-                                                        color: Color(0xFFffffff),
-                                                        offset: Offset(-2, -2),
-                                                        blurRadius: 10,
-                                                        spreadRadius: 1,
-                                                      ),
-                                                    ]
+                                                    )
+                                                  ],
                                                 ),
+                                              )
+                                              //Text('Wait',style: GoogleFonts.gruppo(fontSize: 80,color: Colors.red,fontWeight: FontWeight.bold)),
 
-                                                child: Slider(
-                                                  value: _currentZoomLevel,
-                                                  min: _minAvailableZoom,
-                                                  max: _maxAvailableZoom,
-                                                  activeColor: Colors.white,
-                                                  inactiveColor: Colors.white30,
-                                                  onChanged: (value) async {
-                                                    setState(() {
-                                                      _currentZoomLevel = value;
-                                                    });
-                                                    await controller!
-                                                        .setZoomLevel(value);
-                                                  },
-                                                ),
-                                              ),
-                                            )
-                                        ),
-                                        Padding(
-                                          padding:
-                                          const EdgeInsets.only(right: 8.0),
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                                color: Color(0xFF000000),
-                                                borderRadius: BorderRadius.circular(20),
-                                                boxShadow: [
-                                                  const BoxShadow(
-                                                    color: Color(0xFFffffff),
-                                                    offset: Offset(2, 2),
-                                                    blurRadius: 10,
-                                                    spreadRadius: 1,
-                                                  ),
-                                                  const BoxShadow(
-                                                    color: Color(0xFFffffff),
-                                                    offset: Offset(-2, -2),
-                                                    blurRadius: 10,
-                                                    spreadRadius: 1,
-                                                  ),
-                                                ]
-                                            ),
+                                            ],
+                                          )
 
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(8.0),
-                                              child: Text(
-                                                _currentZoomLevel
-                                                    .toStringAsFixed(1) +
-                                                    'x',
-                                                style: TextStyle(
-                                                    color: Colors.white),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-
-                                    Column(
-                                      mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                      children: [
+                                      ),
 
 
+                                    ],
+                                  ),
 
-                                        InkWell(
-                                            onTap: () {
-                                              print('clicked');
-                                              globals.dialogloading=false;
-
-                                              takePicture(context);
-
-
-
-
-                                            }, // Handle your onTap
-                                            child:Row(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                globals.dialogloading?Icon(Icons.circle,color: Colors.white,size: 80,):
-                                                TweenAnimationBuilder<double>(
-                                                  tween: Tween<double>(begin: 0.0, end: 1),
-                                                  duration: const Duration(seconds: 3),
-                                                  builder: (context, value, _) => Stack(
-                                                    alignment: Alignment.center,
-                                                    children: [
-
-                                                      Container(
-
-                                                        child: Text('Wait',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
-                                                      ),
-
-                                                      Container(
-
-                                                        height: 80,
-                                                        width: 80,
-
-                                                        child:  CircularProgressIndicator(
-
-                                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.redAccent),
-                                                          strokeWidth: 5.7,
-                                                          value: value,
-                                                        ),
-                                                      )
-                                                    ],
-                                                  ),
-                                                )
-                                                //Text('Wait',style: GoogleFonts.gruppo(fontSize: 80,color: Colors.red,fontWeight: FontWeight.bold)),
-
-                                              ],
-                                            )
-
-                                        ),
-
-
-                                      ],
-                                    ),
-
-                                  ],
-                                ),
+                                ],
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
+                      ),
 
-                      ],
-                    ),
-                  )
-
-              )
-                  : Center(
-                child: Text(
-                  'NiGELLA SOFTWARES CAMERA LOADING',
-                  style: TextStyle(color: Colors.white),
-                ),
-              )
-                  : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Row(),
-                  Text(
-                    'Permission denied',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                    ),
+                    ],
                   ),
-                  SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {
-                      getPermissionStatus();
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        'Give permission',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                        ),
+                )
+
+            )
+                : Center(
+              child: Text(
+                'NiGELLA SOFTWARES CAMERA LOADING',
+                style: TextStyle(color: Colors.white),
+              ),
+            )
+                : Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(),
+                Text(
+                  'Permission denied',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                ),
+                SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {
+                    getPermissionStatus();
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      'Give permission',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          )
+          ),
       );
 
   }

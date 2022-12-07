@@ -49,7 +49,7 @@ class _CameraViewState extends State<CameraView> {
 
   ScreenMode _mode = ScreenMode.liveFeed;
 
-   camera1.CameraController? cameraController1;
+  late camera1.CameraController cameraController1;
   File? _image;
 
   String? _path;
@@ -99,8 +99,7 @@ class _CameraViewState extends State<CameraView> {
 
   @override
   void dispose() {
-
-     _stopLiveFeed();
+    // _stopLiveFeed();
     super.dispose();
   }
 
@@ -139,11 +138,11 @@ class _CameraViewState extends State<CameraView> {
       print('uint8List value------>'+file12.path+'\n'+'======>'+valueofrandom);
       globals.filepaths = file12.path;
       globals.mlcamerabool = true;
-     // globals.uint8Listglobal =  Uint8List.fromList(File(file12.path).readAsBytesSync());
+      //print(globals.uint8Listglobal.toString());
+      //print(tmpFile.path);
+      Navigator.pushReplacementNamed(context, '/enrollment');
 
-      print('new000000000000000---------->'+tmpFile.path);
-      _stopLiveFeed();
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => enrollment()));
+     // Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => enrollment()));
 
 
 
@@ -164,7 +163,7 @@ class _CameraViewState extends State<CameraView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title,style:  GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold),),
+        title: Text(widget.title),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => gobacktomain(context),
@@ -193,7 +192,7 @@ class _CameraViewState extends State<CameraView> {
       height: 70.0,
       width: 70.0,
       child: FloatingActionButton(
-        backgroundColor: Color(0xff6B5EFE),
+        backgroundColor: Color(0xff000000),
         child: Icon(
           color: Color(0xffffffff),
           Platform.isIOS
@@ -253,9 +252,9 @@ class _CameraViewState extends State<CameraView> {
             left: 50,
             right: 50,
             child: Slider(
-              activeColor: Color(0xff6B5EFE), // The color to use for the portion of the slider track that is active.
-              inactiveColor: Color(0xff8A81FF), // The color for the inactive portion of the slider track.
-              thumbColor: Color(0xff6B5EFE),
+              activeColor: Color(0xff000000), // The color to use for the portion of the slider track that is active.
+              inactiveColor: Color(0xffFFFFFF), // The color for the inactive portion of the slider track.
+              thumbColor: Color(0xff000000),
               value: zoomLevel,
               min: minZoomLevel,
               max: maxZoomLevel,
@@ -302,19 +301,15 @@ class _CameraViewState extends State<CameraView> {
             splashColor: Colors.red,
             onPressed: () async {
 
-              Toast.show('Cannot take Picture....', duration: Toast.lengthLong, gravity:  Toast.bottom);
+
 
 
               // _navigatetoenrollment(context);
 
             },
-            child:Padding(
-              padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
-              child:  Text('Capture Button will be automatically appeared on the screen once the camera detect HUMAN faces',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)
-              ),
-            )
+            child: Text('Capture Button will be automatically appeared on the screen once the camera detect HUMAN faces',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
           ),
 
 
@@ -336,7 +331,8 @@ class _CameraViewState extends State<CameraView> {
           shape: RoundedRectangleBorder(borderRadius:BorderRadius.circular(30.0) ),
           splashColor: Colors.cyan,
           onPressed: () async {
-
+            _controller!.stopImageStream();
+            _stopLiveFeed();
 
             takePicture(context);
 
@@ -347,8 +343,12 @@ class _CameraViewState extends State<CameraView> {
           },
           child: Text('Capture Image',
               textAlign: TextAlign.center,
-            style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)
-          ),
+              style: TextStyle(
+                fontSize: 18.0,
+                color: Colors.black,
+                fontWeight: FontWeight.w400,
+                //fontFamily: lang.font
+              )),
         ),
       ),
     );
@@ -454,8 +454,8 @@ class _CameraViewState extends State<CameraView> {
   }
 
   Future _stopLiveFeed() async {
-    await _controller!.stopImageStream();
-    await _controller!.dispose();
+    await _controller?.stopImageStream();
+    await _controller?.dispose();
     _controller = null;
   }
 
@@ -525,11 +525,11 @@ class _CameraViewState extends State<CameraView> {
 }
 void gobacktomain(BuildContext context){
   _controller!.stopImageStream();
- // Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => FirstScreen()));
+  //Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => FirstScreen()));
 
 }
 
 void gobacktoenrollment(BuildContext context){
 
- // Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => Enrollmentwithlivness()));
+  //Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => Enrollmentwithlivness()));
 }

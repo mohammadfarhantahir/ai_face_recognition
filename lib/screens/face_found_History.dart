@@ -65,7 +65,7 @@ class facefoundState extends State<facFoundHistory>{
                   ),
                 ),
                  ) ,
-                Expanded(
+              /*  Expanded(
                   flex: 2,
                     child: Card(
                       shape: RoundedRectangleBorder(
@@ -84,7 +84,7 @@ class facefoundState extends State<facFoundHistory>{
                     ),
 
 
-                  )
+                  )*/
 
               ],
 

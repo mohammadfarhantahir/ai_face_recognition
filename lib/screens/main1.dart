@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'homeScreen.dart';
+import 'howtouse.dart';
 import 'loginScreen.dart';
 
 class loginScreen extends StatefulWidget{
@@ -43,7 +44,7 @@ class loginScreenState extends State<loginScreen>{
                   ),
               FittedBox(
                 fit: BoxFit.fitWidth,
-                child:Text('Enrolled, Verify, Relax.',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.normal),
+                child:Text('Relax And Secured.',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.normal),
                 ),),
                   SizedBox(
                     height: 20,
@@ -91,6 +92,7 @@ class loginScreenState extends State<loginScreen>{
                   ),
                   GestureDetector(
                     onTap: () {
+                      movetohowtouse(context);
                       print('how to use clicekd');
                     },
                     child: Container(
@@ -142,6 +144,10 @@ class loginScreenState extends State<loginScreen>{
 
 // to navigate
 void movetoHomescreen(BuildContext context){
-  Navigator.of(context).push(MaterialPageRoute(builder: (context) => loginScreenMain()));
+  Navigator.pushNamed(context, '/loginscreen');
 }
 
+void movetohowtouse(BuildContext context){
+ // Navigator.of(context).push(MaterialPageRoute(builder: (context) => howtouse()));
+  Navigator.pushNamed(context, '/howtouse');
+}

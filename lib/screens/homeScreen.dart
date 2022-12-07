@@ -11,16 +11,18 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 import 'package:ai_face/const/globals.dart' as globals;
-
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'enrollment.dart';
 import 'face_found_History.dart';
+import 'main1.dart';
 import 'verifyBackcamera.dart';
 
 bool wifistatus = false;
 String connectionStatus='';
 
 AnimationController? _controller;
+
 class homeScreen extends StatefulWidget{
   State<homeScreen> createState()=> homeScreenState();
 }
@@ -86,8 +88,8 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
      // set up the AlertDialog
      AlertDialog alert = AlertDialog(
        backgroundColor: Colors.black,
-       title: Text("Configure URL",style: GoogleFonts.didactGothic(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
-       content: Text("Please Enter i.p of OFFLINE server/system.",style: GoogleFonts.didactGothic(fontSize: 18,fontWeight: FontWeight.bold,color: Colors.white,),),
+       title: Text("Configure URL",style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white)),
+       content: Text("Please Enter i.p of OFFLINE server/system.",style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white),),
        actions: [
          Column(
            mainAxisSize: MainAxisSize.max,
@@ -241,7 +243,7 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
 
        },
        child:Container(
-         child: Text("I Understand",style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.white)),
+         child: Text("I Understand",style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white)),
        ),
      );
 
@@ -249,67 +251,113 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
      // set up the AlertDialog
      AlertDialog alert = AlertDialog(
        backgroundColor: Colors.black,
-       title: Text("Ooops!",style: GoogleFonts.didactGothic(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
-       content: Text("Its seems that you haven\'t configured the I.P yet\nGo to left side menu bar and choose \'CONFIGURE URL\'",style: GoogleFonts.didactGothic(fontSize: 18,fontWeight: FontWeight.bold,color: Colors.white,),),
-       actions: [
-         Column(
-           mainAxisSize: MainAxisSize.max,
+       title:  Container(
+         height: MediaQuery.of(context).size.height/2,
+         child: Padding(
+           padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+           child: Column(
+             mainAxisAlignment: MainAxisAlignment.center,
+             mainAxisSize: MainAxisSize.max,
 
-           children: [
+             children: [
+               Container(
+                 height: 30,
+                 child: Text("Ooops!",style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
+               ),
+               SizedBox(
+                 height: 20,
+               ),
+               Container(
+                 height: 100,
+                 child:  Text("Its seems that you haven\'t configured the I.P yet\nGo to left side menu bar and choose \'CONFIGURE URL\'",style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold),),
+               ),
 
-             SizedBox(
-               height: 20,
-             ),
-             Row(
-               mainAxisAlignment: MainAxisAlignment.end,
-               children: [
-                 Expanded(
-                   flex: 1,
-                   child: Container(
-                     width: 200,
-                     height: 70,
-                     padding: EdgeInsets.all(8),
-                     child: Center(
-                       child:   cancelButton,
+
+               SizedBox(
+                 height: 20,
+               ),
+               Row(
+                 mainAxisAlignment: MainAxisAlignment.end,
+                 children: [
+                   Expanded(
+                     flex: 1,
+                     child: GestureDetector(
+                       onTap: () {
+                         setState(() {
+                           print('Main button clicked');
+                           Navigator.of(context, rootNavigator: true).pop();
+                         });
+
+                       },
+                       child:
+                     Container(
+                       width: 200,
+                       height: 70,
+                       padding: EdgeInsets.all(8),
+                       child: Center(
+                         child:   Text("I Understand",style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.white)),
+                       ),
+
+                       decoration: BoxDecoration(
+                           color: Color(0xFF000000),
+                           borderRadius: BorderRadius.circular(20),
+                           boxShadow: [
+                             const BoxShadow(
+                               color: Color(0xFFffffff),
+                               offset: Offset(2, 2),
+                               blurRadius: 10,
+                               spreadRadius: 1,
+                             ),
+                             const BoxShadow(
+                               color: Color(0xFFffffff),
+                               offset: Offset(-2, -2),
+                               blurRadius: 10,
+                               spreadRadius: 1,
+                             ),
+                           ]
+                       ),
                      ),
-                     decoration: BoxDecoration(
-                         color: Color(0xFF000000),
-                         borderRadius: BorderRadius.circular(20),
-                         boxShadow: [
-                           const BoxShadow(
-                             color: Color(0xFFffffff),
-                             offset: Offset(2, 2),
-                             blurRadius: 10,
-                             spreadRadius: 1,
-                           ),
-                           const BoxShadow(
-                             color: Color(0xFFffffff),
-                             offset: Offset(-2, -2),
-                             blurRadius: 10,
-                             spreadRadius: 1,
-                           ),
-                         ]
+                     )
                      ),
-                   ),),
-                 SizedBox(
-                   width: 10,
-                 ),
+                   SizedBox(
+                     width: 10,
+                   ),
 
 
 
 
-               ],
-             )
-           ],
+                 ],
+               )
+             ],
+           ),
+         ),
+         decoration: BoxDecoration(
+             color: Color(0xFF000000),
+             borderRadius: BorderRadius.circular(20),
+             boxShadow: [
+               const BoxShadow(
+                 color: Color(0xFFffffff),
+                 offset: Offset(2, 2),
+                 blurRadius: 10,
+                 spreadRadius: 1,
+               ),
+               const BoxShadow(
+                 color: Color(0xFFffffff),
+                 offset: Offset(-2, -2),
+                 blurRadius: 10,
+                 spreadRadius: 1,
+               ),
+             ]
          ),
 
+       )
+       //
 
-
-       ],
      );
 
      // show the dialog
      showDialog(
+       barrierDismissible: false,
        context: context,
        builder: (BuildContext context) {
          return alert;
@@ -323,11 +371,11 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
    void _doPinging(){
      if(globals.readIPURL==null){
        print(' shared pref is empty');
-       wifistatus = false;
+
        setState(() {
+         wifistatus = false;
 
 
-         _controller!.dispose();
          showAlertDialogNOTCONFIGURED(context);
        });
 
@@ -365,11 +413,27 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
 
    }
 
+   getStringValuesusername() async {
+     SharedPreferences prefs = await SharedPreferences.getInstance();
+     //Return String
+     String? stringValue = prefs.getString('username');
+     globals.username = stringValue!;
+     return stringValue;
+   }
 
 
   @override
-  void initState() {
+  void initState()  {
+
+    getStringValuesusername();
     SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+    if (kIsWeb) {
+      // running on the web!
+      print('now running on web');
+    } else {
+      print('not running on web');
+      // NOT running on the web! You can check for additional platforms here.
+    }
 
     super.initState();
 
@@ -419,22 +483,22 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
         child: ListView(
           padding: const EdgeInsets.all(0),
           children: [
-            const DrawerHeader(
+             DrawerHeader(
               decoration: BoxDecoration(
                 color: Colors.black,
               ), //BoxDecoration
               child: UserAccountsDrawerHeader(
                 decoration: BoxDecoration(color: Colors.black),
                 accountName: Text(
-                  "NiGELLA SOFTWARES",
+                  "SWIMS- BIO",
                   style: TextStyle(fontSize: 18),
                 ),
-                accountEmail: Text("nigellainfotech.com@gmail.com"),
+                accountEmail: Text(globals.username!),
                 currentAccountPictureSize: Size.square(50),
                 currentAccountPicture: CircleAvatar(
                   backgroundColor: Color(0xFFE8E7E8),
                   child: Text(
-                    "N",
+                    "S",
                     style: TextStyle(fontSize: 30.0, color: Colors.blue),
                   ), //Text
                 ), //circleAvatar
@@ -471,8 +535,11 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                 SharedPreferences prefs = await SharedPreferences.getInstance();
                 //Remove String
                 prefs.remove("ipURL");
+
+                prefs.remove('username');
                 print('shared preference removed');
                 Navigator.pop(context);
+                movetomainscreen(context);
               },
             ),
           ],
@@ -512,11 +579,11 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                                     child:Center(
                                       child: wifistatus ? FittedBox(
                                         fit: BoxFit.fitWidth,
-                                        child:Text('Connected..',style: GoogleFonts.didactGothic(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.white)
+                                        child:Text('Connected..',style: GoogleFonts.gruppo(fontSize: 20,color: Colors.white,fontWeight: FontWeight.bold)
                                           ,)):
                             FittedBox(
                             fit: BoxFit.fitWidth,
-                            child:Text('Not Connected..',style: GoogleFonts.didactGothic(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.black),
+                            child:Text('Not Connected..',style: GoogleFonts.gruppo(fontSize: 20,color: Colors.black,fontWeight: FontWeight.bold)
                             ),
                             )
                                     )
@@ -565,7 +632,7 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                                                       padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
                                                       child: FittedBox(
                                                         fit: BoxFit.fitWidth,
-                                                        child: Text('Enroll Face',style: GoogleFonts.didactGothic(color: Colors.white,fontWeight: FontWeight.bold),
+                                                        child: Text('Enroll Face',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold),
                                                         ),
                                                       ),
                                                     )
@@ -625,7 +692,7 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                                                       padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
                                                       child:  FittedBox(
                                                         fit: BoxFit.contain,
-                                                        child:Text('Verify using\nFront camera',style: GoogleFonts.didactGothic(color: Colors.white,fontWeight: FontWeight.bold),),
+                                                        child:Text('Verify using\nFront camera',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold),),
                                                       ),
                                                     )
                                                   )
@@ -682,7 +749,7 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                                           Expanded(
                                               flex: 1,
                                               child:
-                                              Text('Verify using\nBack camera',style: GoogleFonts.didactGothic(fontSize:18,color: Colors.white,fontWeight: FontWeight.bold),
+                                              Text('Verify using\nBack camera',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold),
                                                 ),
                                           )
 
@@ -768,19 +835,28 @@ Widget _buildneumorphism(double radius){
 }
 
 void movetoenrollment(BuildContext context){
-  Navigator.of(context).push(MaterialPageRoute(builder: (context) => enrollment()));
+ // Navigator.of(context).push(MaterialPageRoute(builder: (context) => enrollment()));
+  Navigator.pushNamed(context, '/enrollment');
 }
 void movetofrontcamera(BuildContext context){
-  Navigator.of(context).push(MaterialPageRoute(builder: (context) => verifyFrontCamera()));
+ // Navigator.of(context).push(MaterialPageRoute(builder: (context) => verifyFrontCamera()));
+  Navigator.pushNamed(context, '/verifyFrontCamera');
 
 }
 
 void  movetobackcamera(BuildContext context){
-  Navigator.of(context).push(MaterialPageRoute(builder: (context) => backCamera()));
+  //Navigator.of(context).push(MaterialPageRoute(builder: (context) => backCamera()));
+  Navigator.pushNamed(context, '/backCamera');
 
 }
 
 void movetofacefoundhistory(BuildContext context){
-  Navigator.of(context).push(MaterialPageRoute(builder: (context) => facFoundHistory()));
+  //Navigator.of(context).push(MaterialPageRoute(builder: (context) => facFoundHistory()));
+  Navigator.pushNamed(context, '/facFoundHistory');
+
+}
+void movetomainscreen(BuildContext context){
+  //Navigator.of(context).push(MaterialPageRoute(builder: (context) => loginScreen()));
+  Navigator.pushNamed(context, '/loginscreen');
 
 }

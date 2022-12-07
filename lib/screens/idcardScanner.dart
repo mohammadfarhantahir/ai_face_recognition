@@ -14,7 +14,6 @@ import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'package:camera/camera.dart';
 
@@ -33,6 +32,8 @@ import '../api/insert_verification_record.dart';
 import '../api/update_verification_record.dart';
 import '../main.dart';
 import '../utils/dialogAlerts.dart';
+import '../utils/makePdf.dart';
+
 
 late String pathofimg ='';
 bool facestatusknownUnknow= false;
@@ -42,9 +43,14 @@ late String resdata='';
 late String imgpatfhforalert;
 late String nameofface='';
 late String _rere='';
-bool camPrevstatus = true;
-
-
+late String countryres='';
+late String country_codeRes='';
+late String nationalityRes='';
+late String genderRes='';
+late String passportRes='';
+late String firs_nameRes='';
+late String last_nameRes='';
+bool dialogloading = true;
 
 
 late String imageofface = '';
@@ -54,19 +60,20 @@ PickedFile? _imageFile1;
 File? _imageFile;
 bool ss =false;
 late final CameraController? cameraController;
-
+bool _enableTextfields = false;
 late String scannedText ='';
 bool textScanning = false;
-class verifyFrontCamera extends StatefulWidget{
+bool textScanningrel = false;
+class idCardScannerCamera extends StatefulWidget{
 
-  State<verifyFrontCamera> createState()=> _frontcameraState();
+  State<idCardScannerCamera> createState()=> idCardScannerState();
 }
-class _frontcameraState extends State<verifyFrontCamera>{
+class idCardScannerState extends State<idCardScannerCamera>{
   CameraController? controller;
   var currentTime;
   Random random = new Random();
   String holdRanvalue='';
-  late Stopwatch stopwatch;
+
 
   // Initial values
   bool _isCameraInitialized = false;
@@ -101,7 +108,7 @@ class _frontcameraState extends State<verifyFrontCamera>{
         _isCameraPermissionGranted = true;
       });
       // Set and initialize the new camera
-      onNewCameraSelected(cameras[1]);
+      onNewCameraSelected(cameras[0]);
       refreshAlreadyCapturedImages();
     } else {
       // log('Camera Permission: DENIED');
@@ -135,7 +142,6 @@ class _frontcameraState extends State<verifyFrontCamera>{
 
 
 
-
   Future<XFile?> takePicture(BuildContext context) async {
     final CameraController? cameraController = controller;
 
@@ -153,33 +159,16 @@ class _frontcameraState extends State<verifyFrontCamera>{
       File rotatedImage =
       await FlutterExifRotation.rotateAndSaveImage(path: file1.path);
       print('rotatwed image --->'+rotatedImage.path);
-      camPrevstatus = false;
+
 
       finalPath = rotatedImage.path;
 
+      globals.pathimagetobeusedinpdf = rotatedImage.path;
 
-      print(tmpFile.path);
-      var now = new DateTime.now();
-      currentTime = DateFormat.jm().format(now);
-      var formatter = new DateFormat('MM');
-      var formattertext = new DateFormat('MMM');
-      var formatteryear = new DateFormat('yyyy');
-      var formatterdat = new DateFormat('dd');
-      String currentMOnth = formatter.format(now);
-      String currentYEar =  formatteryear.format(now);
-      String currentday = formatterdat.format(now);
-      String currentdate = currentday;
-      String todaysdate = currentdate+'/'+currentMOnth+'/'+currentYEar;
-      String newtodaysdate = currentdate+'-'+currentMOnth+'-'+currentYEar;
-      setState(() {
-        int randomNumber = random.nextInt(1000); // from 0 upto 990 included
-        holdRanvalue = randomNumber.toString();
 
-      });
-      print('current time is --->'+holdRanvalue+' '+currentTime.toString()+newtodaysdate);
-      insertVerificationRecord(context,holdRanvalue,currentTime.toString(),newtodaysdate);
+
+
       uploadImage(finalPath, uploadUrl, context);
-
 
 
 
@@ -196,128 +185,64 @@ class _frontcameraState extends State<verifyFrontCamera>{
     }
   }
 
-  late final String uploadUrl = 'http://'+globals.readIPURL!+':5000/api/recognize';
+  late final String uploadUrl = 'http://face.ladang.tech:9000/process';
   Future<String?> uploadImage(filepath, url,BuildContext context) async {
 
-    // showAlertDialogserverresponsewait(context);
-    var request = http.MultipartRequest('POST', Uri.parse(url));
-    request.files.add(await http.MultipartFile.fromPath('image', filepath));
-    var res = await request.send();
 
+    var request = http.MultipartRequest('POST', Uri.parse(url));
+    request.files.add(await http.MultipartFile.fromPath('imagefile', filepath));
+    var res = await request.send();
     var responseBytes = await res.stream.toBytes();
     var responseString = utf8.decode(responseBytes);
     resdata = responseString.toString();
     _rere = resdata;
     print(resdata.toString());
-    Map<String, dynamic> data = jsonDecode(_rere);
-
-
-    String s = data["Name"].toString().replaceAll("[", "").replaceAll(']', '');
-    if(s.isEmpty){
-      print('value is empty');
+    if(res.statusCode==400){
       setState(() {
+        dialogloading=true;
+        dialogAlertsforpassport(context);
 
-        var now = new DateTime.now();
-        final updatedCurrentTime = DateFormat.jm().format(now);
-        var formatter = new DateFormat('MM');
-        var formattertext = new DateFormat('MMM');
-        var formatteryear = new DateFormat('yyyy');
-        var formatterdat = new DateFormat('dd');
-        String currentMOnth = formatter.format(now);
-        String currentYEar =  formatteryear.format(now);
-        String currentday = formatterdat.format(now);
-        String currentdate = currentday;
-        String todaysdate = currentdate+'/'+currentMOnth+'/'+currentYEar;
-        String newtodaysdate = currentdate+'-'+currentMOnth+'-'+currentYEar;
-        print('updated time is --->'+holdRanvalue+' '+updatedCurrentTime+'no face found');
-        updateVerificationRecord(context,holdRanvalue,updatedCurrentTime,'no face found');
-        globals.dialogloading=true;
-        controller!.resumePreview();
-        camPrevstatus = true;
-        dialogAlerts(context);
+        print('try another image');
       });
 
+    //  showAlertDialogserverreserror(context);
     }
     else{
-      final split = s.split(',');
-      final Map<int, String> values = {
-        for (int i = 0; i < split.length; i++)
-          i: split[i]
-      };
-      final vaa1 = values[0];
-      print('----->splitedd value'+vaa1.toString());
-      nameofface =vaa1.toString();
-      globals.verifiedName = vaa1.toString();
-      if(nameofface=='unknown'){
-        setState(() {
-
-          controller!.resumePreview();
-          camPrevstatus = true;
-          facestatusknownUnknow = false;
-        });
-      }
-      else if(nameofface=='[]'){
-        print('no face found');
-
-        setState(() {
-
-          var now = new DateTime.now();
-          final updatedCurrentTime = DateFormat.jm().format(now);
-          var formatter = new DateFormat('MM');
-          var formattertext = new DateFormat('MMM');
-          var formatteryear = new DateFormat('yyyy');
-          var formatterdat = new DateFormat('dd');
-          String currentMOnth = formatter.format(now);
-          String currentYEar =  formatteryear.format(now);
-          String currentday = formatterdat.format(now);
-          String currentdate = currentday;
-          String todaysdate = currentdate+'/'+currentMOnth+'/'+currentYEar;
-          String newtodaysdate = currentdate+'-'+currentMOnth+'-'+currentYEar;
-          print('updated time is --->'+holdRanvalue+' '+updatedCurrentTime+'no face found');
-          updateVerificationRecord(context,holdRanvalue,updatedCurrentTime,'no face found');
-          globals.dialogloading=true;
-          controller!.pausePreview();
-          camPrevstatus = true;
-          dialogAlerts(context);
-        });
+      Map<String, dynamic> data = jsonDecode(_rere);
+      var country = data["country"];
+      var country_code = data["country_code"];
+      var first_name = data["first_name"];
+      var last_name = data["last_name"];
+      var nationality = data["nationality"];
+      var passportnumver = data["number"];
+      var gender = data["sex"];
+      countryres = country.toString();
+      country_codeRes = country_code.toString();
+      nationalityRes = nationality.toString();
+      genderRes = gender.toString();
+      passportRes = passportnumver.toString();
+      firs_nameRes = first_name.toString();
+      last_nameRes = last_name.toString();
+      globals.scanFirstName = firs_nameRes;
+      globals.scanLastName = last_nameRes;
+      globals.scanGender = genderRes;
+      globals.scanNationality = nationalityRes;
 
 
-      }
-      else{
-
-        facestatusknownUnknow = true;
-      }
-
+      print("Country"+country.toString());
       print("--->"+_rere);
-
-
       setState(() {
-
-        var now = new DateTime.now();
-        final updatedCurrentTime1 = DateFormat.jm().format(now);
-
-
-        print('updated time is --->'+holdRanvalue+' '+updatedCurrentTime1+nameofface);
-        updateVerificationRecord(context,holdRanvalue,updatedCurrentTime1,nameofface);
-        globals.dialogloading=true;
-        controller!.resumePreview();
-        camPrevstatus = true;
+        dialogloading=true;
         _previewImageFrontAlert(context);
-        print(responseString);
       });
 
 
+
+
+
+
+      print(responseString);
     }
-
-
-
-
-
-
-
-
-
-
 
 
     return res.reasonPhrase;
@@ -383,7 +308,7 @@ class _frontcameraState extends State<verifyFrontCamera>{
                     alignment: Alignment.center,
                     child: Container(
 
-                      child: Text('Face Recognition Result',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
+                      child: Text('Passport Result',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ),
@@ -400,7 +325,7 @@ class _frontcameraState extends State<verifyFrontCamera>{
                       children: [
                         Container(
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(100.0),
+                              borderRadius: BorderRadius.circular(20.0),
                               child:   Image.file(
                                 File(finalPath),
                                 fit: BoxFit.cover,
@@ -410,74 +335,114 @@ class _frontcameraState extends State<verifyFrontCamera>{
                             )
                         ),
                         // you can replace
-                        Container(
 
-                          height: 200,
-                          width: 200,
-
-                          child:  CircularProgressIndicator(
-
-                            valueColor: facestatusknownUnknow?AlwaysStoppedAnimation<Color>(Colors.white):AlwaysStoppedAnimation<Color>(Colors.red),
-                            strokeWidth: 5.7,
-                            value: value,
-                          ),
-                        )
                       ],
                     ),
                   )
               ),
 
-
-
               Padding(
-                  padding: EdgeInsets.fromLTRB(15, 15, 15, 15),
+                  padding:EdgeInsets.fromLTRB(10, 10, 10, 10),
+                child: Container(
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Container(
-                          decoration: BoxDecoration(
-                              color: Color(0xFF000000),
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                const BoxShadow(
-                                  color: Color(0xFFffffff),
-                                  offset: Offset(2, 2),
-                                  blurRadius: 10,
-                                  spreadRadius: 1,
-                                ),
-                                const BoxShadow(
-                                  color: Color(0xFFffffff),
-                                  offset: Offset(-2, -2),
-                                  blurRadius: 10,
-                                  spreadRadius: 1,
-                                ),
-                              ]
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.fromLTRB(5, 5, 20, 5),
-                            child: Text('Name/id: $nameofface',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
-                          )
+                      Padding(
+                          padding:EdgeInsets.fromLTRB(10, 10, 10, 10),
+                        child: Container(
+                          height: 20,
+                          child: Text('Country Code: '+country_codeRes,style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold))
+                        )
+
                       ),
-                      SizedBox(
-                        width: 40,
+                      Padding(
+                        padding:EdgeInsets.fromLTRB(10, 10, 10, 10),
+                        child:  Container(
+                          height: 20,
+                          child: Text('Nationality: '+nationalityRes,style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold))
+                        )
+                       ),
+                      Padding(
+                        padding:EdgeInsets.fromLTRB(10, 10, 10, 10),
+                        child:  Container(
+                          height: 20,
+                          child: Text('Gender: '+genderRes,style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold))
+                        )
+
+                      ),
+                      Padding(
+                        padding:EdgeInsets.fromLTRB(10, 10, 10, 10),
+                        child:  Container(
+                          height: 20,
+                          child: Text('First Name: '+firs_nameRes,style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold))
+                        )
+
+
+                      ),
+
+                      Padding(
+                        padding:EdgeInsets.fromLTRB(10, 10, 10, 10),
+                        child:  Text('Last Name: '+last_nameRes,style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold))
+
+
+                      ),
+
+
+
+                      Padding(
+                        padding:EdgeInsets.fromLTRB(10, 10, 10, 10),
+                        child:   Expanded(
+                          flex: 1,
+                          child: Container(
+                              decoration: BoxDecoration(
+                                  color: Color(0xFF000000),
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    const BoxShadow(
+                                      color: Color(0xFFffffff),
+                                      offset: Offset(2, 2),
+                                      blurRadius: 10,
+                                      spreadRadius: 1,
+                                    ),
+                                    const BoxShadow(
+                                      color: Color(0xFFffffff),
+                                      offset: Offset(-2, -2),
+                                      blurRadius: 10,
+                                      spreadRadius: 1,
+                                    ),
+                                  ]
+                              ),
+                              child: GestureDetector(
+                                  onTap: () {
+                                    print('Continue clicked');
+                                    setState(() {
+                                      createPDF();
+                                      Navigator.pop(context);
+                                    });
+
+                                   // movetopdf(context);
+
+                                  },
+                                  child: Center(
+                                    child: Padding(
+                                        padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                                        child:  Text('Continue',style: GoogleFonts.gruppo(fontSize: 22,color: Colors.white,fontWeight: FontWeight.bold))),
+                                  )
+                              )
+
+                          ),
+                        ),
                       ),
 
 
                     ],
-                  )
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    child: facestatusknownUnknow?Text('Found',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)
-                      ,):Text('Not Found',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
-                  )
-                ],
-              ),
+                  ),
+                ),
+                      
+              
+              )
+
+
+
 
 
             ],
@@ -616,7 +581,7 @@ class _frontcameraState extends State<verifyFrontCamera>{
         child:  Scaffold(
           appBar: AppBar(
 
-            title: Text('Front Camera Screen',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
+            title: Text('Document Scan',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
             leading: IconButton(
               icon: Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () => Navigator.of(context).pop(),
@@ -664,7 +629,7 @@ class _frontcameraState extends State<verifyFrontCamera>{
                       child: Stack(
                         children: [
 
-                          camPrevstatus?CameraPreview(
+                          CameraPreview(
                             controller!,
                             child: LayoutBuilder(builder:
                                 (BuildContext context,
@@ -675,15 +640,6 @@ class _frontcameraState extends State<verifyFrontCamera>{
                                     onViewFinderTap(details, constraints),
                               );
                             }),
-                          ):Center(
-
-                            child: Image.asset(
-                              'assets/images/circle_glowing.gif',
-                              height: MediaQuery.of(context).size.height,
-                              width: MediaQuery.of(context).size.width,
-                            ), // Image.asset
-
-                            // Text('Recognization started',style: GoogleFonts.gruppo(fontSize: 38,color: Colors.white,fontWeight: FontWeight.bold)),
                           ),
 
                           Padding(
@@ -907,16 +863,9 @@ class _frontcameraState extends State<verifyFrontCamera>{
                                     InkWell(
                                         onTap: () {
                                           print('clicked');
-                                          globals.dialogloading=false;
+                                          dialogloading=false;
 
-                                          setState(() {
-
-                                            takePicture(context).then((value) =>
-
-                                                controller!.pausePreview()
-
-                                            );
-                                          });
+                                          takePicture(context);
 
 
 
@@ -925,7 +874,7 @@ class _frontcameraState extends State<verifyFrontCamera>{
                                         child:Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
-                                            globals.dialogloading?Icon(Icons.circle,color: Colors.white,size: 80,):
+                                            dialogloading?Icon(Icons.circle,color: Colors.white,size: 80,):
                                             TweenAnimationBuilder<double>(
                                               tween: Tween<double>(begin: 0.0, end: 1),
                                               duration: const Duration(seconds: 3),
@@ -1017,4 +966,10 @@ class _frontcameraState extends State<verifyFrontCamera>{
   }
 
 }
+
+void movetopdf(BuildContext context){
+ // Navigator.of(context).push(MaterialPageRoute(builder: (context) => CreatePdfStatefulWidget()));
+
+}
+
 
