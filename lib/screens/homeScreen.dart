@@ -4,6 +4,7 @@ import 'dart:async';
 
 
 import 'package:ai_face/screens/verifyFrontcamera.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +16,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'enrollment.dart';
 import 'face_found_History.dart';
+import 'loginScreen.dart';
 import 'main1.dart';
 import 'verifyBackcamera.dart';
 
@@ -424,7 +426,6 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
 
   @override
   void initState()  {
-
     getStringValuesusername();
     SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
     if (kIsWeb) {
@@ -454,7 +455,7 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
         lowerBound: 0.5,
         duration: Duration(seconds: 3),
       )..repeat();
-      periodicSub = new Stream.periodic(const Duration(milliseconds: 500), (v) => v)
+      periodicSub = new Stream.periodic( Duration(milliseconds: 500), (v) => v)
           .take(1)
           .listen((count) =>getStringValuesSF());
     }
@@ -489,15 +490,15 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
               ), //BoxDecoration
               child: UserAccountsDrawerHeader(
                 decoration: BoxDecoration(color: Colors.black),
-                accountName: Text(
+                accountName: AutoSizeText(
                   "SWIMS- BIO",
                   style: TextStyle(fontSize: 18),
                 ),
-                accountEmail: Text(globals.username!),
+                accountEmail: AutoSizeText(globals.username!),
                 currentAccountPictureSize: Size.square(50),
                 currentAccountPicture: CircleAvatar(
                   backgroundColor: Color(0xFFE8E7E8),
-                  child: Text(
+                  child: AutoSizeText(
                     "S",
                     style: TextStyle(fontSize: 30.0, color: Colors.blue),
                   ), //Text
@@ -506,7 +507,7 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
             ), //DrawerHeader
             ListTile(
               leading: const Icon(CupertinoIcons.settings),
-              title: const Text(' Configure URL '),
+              title: const AutoSizeText(' Configure URL '),
               onTap: () {
 
                 Navigator.pop(context);
@@ -514,11 +515,11 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
               },
             ),
             ExpansionTile(
-              title: Text("History"),
+              title: AutoSizeText("History"),
               children: <Widget>[
                 ListTile(
                   leading: const Icon(Icons.face),
-                  title: const Text('Verification History'),
+                  title: const AutoSizeText('Verification History'),
                   onTap: () async {
 
                     Navigator.pop(context);
@@ -528,9 +529,31 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
 
               ],
             ),
+
+
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const AutoSizeText('Live Back Camera Capture'),
+              onTap: () async {
+
+                Navigator.pop(context);
+                movetoLiveCapture(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const AutoSizeText('Live Front Camera Capture'),
+              onTap: () async {
+
+                Navigator.pop(context);
+                movetoFrontCapture(context);
+              },
+            ),
+
+
             ListTile(
               leading: const Icon(Icons.logout),
-              title: const Text('LogOut'),
+              title: const AutoSizeText('LogOut'),
               onTap: () async {
                 SharedPreferences prefs = await SharedPreferences.getInstance();
                 //Remove String
@@ -542,6 +565,7 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                 movetomainscreen(context);
               },
             ),
+
           ],
         ),
       ), //Deawer,
@@ -630,10 +654,7 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                                                     flex: 2,
                                                     child:Padding(
                                                       padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
-                                                      child: FittedBox(
-                                                        fit: BoxFit.fitWidth,
-                                                        child: Text('Enroll Face',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold),
-                                                        ),
+                                                      child: AutoSizeText('Enroll Face',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold),
                                                       ),
                                                     )
                                                   )
@@ -690,10 +711,7 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                                                     child:
                                                     Padding(
                                                       padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
-                                                      child:  FittedBox(
-                                                        fit: BoxFit.contain,
-                                                        child:Text('Verify using\nFront camera',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold),),
-                                                      ),
+                                                      child:  AutoSizeText('Verify using\nFront camera',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold),),
                                                     )
                                                   )
                                                 ],
@@ -749,7 +767,9 @@ class homeScreenState extends State<homeScreen>with TickerProviderStateMixin{
                                           Expanded(
                                               flex: 1,
                                               child:
-                                              Text('Verify using\nBack camera',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold),
+                                              AutoSizeText('Verify using\nBack camera',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold),
+
+
                                                 ),
                                           )
 
@@ -857,6 +877,26 @@ void movetofacefoundhistory(BuildContext context){
 }
 void movetomainscreen(BuildContext context){
   //Navigator.of(context).push(MaterialPageRoute(builder: (context) => loginScreen()));
-  Navigator.pushNamed(context, '/loginscreen');
+
+  Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+          builder: (context) => loginScreenMain()
+      ),
+      ModalRoute.withName("/loginscreen")
+  );
+ // Navigator.pushNamed(context, '/loginscreen');
+
+}
+
+
+void movetoLiveCapture(BuildContext context){
+  //Navigator.of(context).push(MaterialPageRoute(builder: (context) => loginScreen()));
+  Navigator.pushNamed(context, '/LiveCapture');
+
+}
+
+void movetoFrontCapture(BuildContext context){
+  Navigator.pushNamed(context, '/FrontLiveCapture');
 
 }

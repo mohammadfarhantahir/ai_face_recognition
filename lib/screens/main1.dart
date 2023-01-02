@@ -44,7 +44,7 @@ class loginScreenState extends State<loginScreen>{
                   ),
               FittedBox(
                 fit: BoxFit.fitWidth,
-                child:Text('Relax And Secured.',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.normal),
+                child:Text('Secure Face Verification.',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.normal),
                 ),),
                   SizedBox(
                     height: 20,
@@ -53,6 +53,7 @@ class loginScreenState extends State<loginScreen>{
                   GestureDetector(
                     onTap: () {
                       print('login clicked');
+
                       movetoHomescreen(context);
                     },
                     child: Container(
@@ -144,10 +145,13 @@ class loginScreenState extends State<loginScreen>{
 
 // to navigate
 void movetoHomescreen(BuildContext context){
-  Navigator.pushNamed(context, '/loginscreen');
+  Navigator.pushReplacementNamed(context, '/loginscreen');
+      (route) => false;
 }
+
 
 void movetohowtouse(BuildContext context){
  // Navigator.of(context).push(MaterialPageRoute(builder: (context) => howtouse()));
-  Navigator.pushNamed(context, '/howtouse');
+  Navigator.pushReplacementNamed(context, '/howtouse');
+      (route) => false;
 }

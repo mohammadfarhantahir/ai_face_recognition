@@ -1,5 +1,8 @@
 
 
+import 'dart:io';
+
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -37,10 +40,12 @@ class loginScreenState extends State<loginScreenMain>{
     try{
 
       Response response = await get(
-        Uri.parse('https://face.ladang.tech/face-recognition-webservice-master/mobilelogin.php?username='+usernamenameController.text.toString()+'&&password='+passwordController.text.toString()),
+        Uri.parse('http://'+globals.readIPURL!+'/face-recognition-webservice-master/mobilelogin.php?username='+usernamenameController.text.toString()+'&&password='+passwordController.text.toString()),
+
 
       );
 
+      print(response.body);
       if(response.statusCode == 200){
 
         var data = jsonDecode(response.body.toString());
@@ -75,7 +80,34 @@ class loginScreenState extends State<loginScreenMain>{
     // TODO: implement build
     return Scaffold(
 
+
+
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.black87,
+        elevation: 0,
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(
+              Icons.settings,
+            ),
+            // the method which is called
+            // when button is pressed
+            onPressed: () {
+              setState(
+                    () {
+                      dialogAlertslforloginsetup(context);
+                  print('url setting clicked');
+                },
+              );
+            },
+          ),
+        ],
+
+      ),
+
       body: SingleChildScrollView(
+
         child: Stack(
           children: [
             Container(
@@ -93,7 +125,7 @@ class loginScreenState extends State<loginScreenMain>{
             FittedBox(
             fit: BoxFit.fitWidth,
             child:
-            Text('Login',style: GoogleFonts.gruppo(fontSize: 38,color: Colors.white,fontWeight: FontWeight.bold)
+            AutoSizeText('Login',style: GoogleFonts.gruppo(fontSize: 38,color: Colors.white,fontWeight: FontWeight.bold)
               ,),),
             SizedBox(
               height: 20,
@@ -105,8 +137,10 @@ class loginScreenState extends State<loginScreenMain>{
               padding: EdgeInsets.all(8),
               child: Center(
                   child:  Padding(
-                    padding: EdgeInsets.all(10),
+                    padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
                     child: TextField(
+                      cursorColor: Colors.black,
+                      textInputAction: TextInputAction.unspecified,
                       style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.black),
                       //keyboardType: TextInputType.numberWithOptions(),
                       controller: usernamenameController,
@@ -117,7 +151,7 @@ class loginScreenState extends State<loginScreenMain>{
 
                         border: InputBorder.none,
                         labelText: 'Email',
-                        labelStyle: GoogleFonts.didactGothic(fontSize: 18,color: Colors.black),
+                        labelStyle: GoogleFonts.gruppo(fontSize: 18,color: Colors.black),
                       ),
 
                     ),
@@ -154,6 +188,7 @@ class loginScreenState extends State<loginScreenMain>{
                   child:  Padding(
                     padding: EdgeInsets.all(10),
                     child: TextField(
+                      cursorColor: Colors.black,
                       style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.black),
                       obscureText: true,
                       enableSuggestions: false,
@@ -166,7 +201,7 @@ class loginScreenState extends State<loginScreenMain>{
 
                         border: InputBorder.none,
                         labelText: 'Password',
-                        labelStyle: GoogleFonts.didactGothic(fontSize: 18,color: Colors.black),
+                        labelStyle: GoogleFonts.gruppo(fontSize: 18,color: Colors.black),
                       ),
 
                     ),
@@ -199,9 +234,35 @@ class loginScreenState extends State<loginScreenMain>{
                   print('cannot be empty');
                   dialogAlertslforloginempty(context);
                 }else{
-                  globals.username = usernamenameController.text.toString();
-                  globals.password = passwordController.text.toString();
-                  login(usernamenameController.text.toString(),passwordController.text.toString());
+
+                  Socket.connect(globals.readIPURL, 80, timeout: Duration(seconds: 5)).then((socket){
+
+                    setState(() {
+                      print('php i.p is ---->'+globals.readIPURL!);
+
+                      globals.username = usernamenameController.text.toString();
+                      globals.password = passwordController.text.toString();
+                      login(usernamenameController.text.toString(),passwordController.text.toString());
+
+                      // wifistatus = true;
+
+
+                      print("Success");
+                    });
+
+
+                    socket.destroy();
+                  }).catchError((error){
+                    setState(() {
+
+                      dialogAlertslforiperror(context);
+                      print("Exception on Socket "+error.toString());
+
+                    });
+
+                  });
+
+
                 }
 
                 //movetoHomescreen(context);
@@ -211,7 +272,7 @@ class loginScreenState extends State<loginScreenMain>{
                 height: 60,
                 padding: EdgeInsets.all(8),
                 child: Center(
-                  child: Text('Login',style: GoogleFonts.didactGothic(fontSize: 18,color: Colors.black),),
+                  child: AutoSizeText('Login',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.black),),
                 ),
                 decoration: BoxDecoration(
                     color: Color(0xFFE8E8E9),
@@ -251,5 +312,13 @@ class loginScreenState extends State<loginScreenMain>{
 
 void movetoHomescreen(BuildContext context){
  // Navigator.of(context).push(MaterialPageRoute(builder: (context) => homeScreen()));
-  Navigator.pushNamed(context, '/homescreen');
+  Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+          builder: (context) => homeScreen()
+      ),
+      ModalRoute.withName("/homescreen")
+  );
+ /* Navigator.pushReplacementNamed(context, '/homescreen');
+      (route) => false;*/
 }

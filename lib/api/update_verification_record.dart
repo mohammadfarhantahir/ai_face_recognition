@@ -12,7 +12,7 @@ Future updateVerificationRecord(BuildContext context,uId,time,verificationResult
 
 
   // API URL
-  var url = 'http://face.ladang.tech/face-recognition-webservice-master/verificationUpdate.php';
+  var url = 'http://'+globals.readIPURL!+'/face-recognition-webservice-master/verificationUpdate.php';
 
 
   // Store all data with Param Name.

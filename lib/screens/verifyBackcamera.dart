@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -14,6 +15,7 @@ import 'dart:typed_data';
 import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:path/path.dart';
 
 import 'package:camera/camera.dart';
@@ -29,9 +31,11 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'package:toast/toast.dart';
 
+import '../api/facedetailslist.dart';
 import '../api/insert_verification_record.dart';
 import '../api/update_verification_record.dart';
 import '../main.dart';
+import '../model/faceslistdetails.dart';
 import '../utils/dialogAlerts.dart';
 
 late String pathofimg ='';
@@ -42,6 +46,7 @@ late String resdata='';
 late String imgpatfhforalert;
 late String nameofface='';
 late String _rere='';
+int totalresult =0;
 bool camPrevstatus = true;
 
 
@@ -177,10 +182,10 @@ class _backcameraState extends State<backCamera>{
         holdRanvalue = randomNumber.toString();
 
       });
+
       print('current time is --->'+holdRanvalue+' '+currentTime.toString()+newtodaysdate);
       insertVerificationRecord(context,holdRanvalue,currentTime.toString(),newtodaysdate);
       uploadImage(finalPath, uploadUrl, context);
-
 
 
 
@@ -196,7 +201,73 @@ class _backcameraState extends State<backCamera>{
       return null;
     }
   }
+  List<FacesDetails> _faceFound = <FacesDetails>[];
+  void _populateNewsArticles() {
 
+
+
+  }
+  ListTile _buildItemsForListView(BuildContext context, int index) {
+    return ListTile(
+        title: Container(
+          margin: EdgeInsets.all(10),
+          height: 350,
+          width: MediaQuery.of(context).size.width,
+          child: Padding(
+              padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+              child: Column(
+
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child:
+                    Container(
+                      height: 200,
+
+                      child: Column(
+                        children: [
+                          CircleAvatar(
+                            radius: 80.0,
+                            backgroundImage:
+                            NetworkImage('https://face.ladang.tech/face-recognition-webservice-master/train/train/'+nameofface+'/'+_faceFound[index].image_name),
+                            backgroundColor: Colors.transparent,
+                          ),
+                          //Text('Image Name : '+_faceFound[index].image_name ,style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
+                          Text('Enrolled By : '+_faceFound[index].enrolled_by ,style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
+                          Text('Registration date : '+_faceFound[index].folder_creation_date ,style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
+                          Text('Registration time : '+_faceFound[index].folder_creation_time ,style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ),
+                  ) ,
+
+
+                ],
+
+              )
+          ),
+          decoration: BoxDecoration(
+              color: Color(0xFF000000),
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                const BoxShadow(
+                  color: Color(0xFFffffff),
+                  offset: Offset(2, 2),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                ),
+                const BoxShadow(
+                  color: Color(0xFFffffff),
+                  offset: Offset(-2, -2),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                ),
+              ]
+          ),
+        )
+
+    );
+  }
   late final String uploadUrl = 'http://'+globals.readIPURL!+':5000/api/recognize';
   Future<String?> uploadImage(filepath, url,BuildContext context) async {
 
@@ -241,13 +312,23 @@ class _backcameraState extends State<backCamera>{
     }
     else{
       final split = s.split(',');
+
+
+
       final Map<int, String> values = {
         for (int i = 0; i < split.length; i++)
           i: split[i]
+
+
       };
+
+
       final vaa1 = values[0];
       print('----->splitedd value'+vaa1.toString());
-      nameofface =vaa1.toString();
+      totalresult = split.length;
+      print('total faces are -->'+totalresult.toString());
+      nameofface = s;
+      globals.facedetailnameid = nameofface;
       globals.verifiedName = vaa1.toString();
       if(nameofface=='unknown'){
        setState(() {
@@ -345,7 +426,11 @@ class _backcameraState extends State<backCamera>{
               onTap: () {
 
                 print('cross clicked');
-                Navigator.pop(context);
+                setState(() {
+                  globals.facedetailnameid='';
+                  Navigator.pop(context);
+                });
+
               },
               child:
               Icon(Icons.cancel,color: Colors.white,size: 40,),
@@ -456,9 +541,11 @@ class _backcameraState extends State<backCamera>{
                           ),
                           child: Padding(
                             padding: EdgeInsets.fromLTRB(5, 5, 20, 5),
-                            child: Text('Name/id: $nameofface',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
-                          )
+                            child: Text('Name/id: $nameofface'+'\nTotal faces are - '+totalresult.toString(),style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
+                          ),
+
                       ),
+
                       SizedBox(
                         width: 40,
                       ),
@@ -474,8 +561,187 @@ class _backcameraState extends State<backCamera>{
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    child: facestatusknownUnknow?Text('Found',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)
-                      ,):Text('Not Found',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
+                    child: Column(
+                      children: [
+                        facestatusknownUnknow?Text('Found',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)
+                          ,):Text('Not Found',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold)),
+                        GestureDetector(
+                            onTap: () {
+                            print('clicked');
+                            setState(() {
+                              print(globals.facedetailnameid);
+
+                                String detailsofface = 'http://'+globals.readIPURL!+'/face-recognition-webservice-master/getenrolledpic.php?folder_name='+globals.facedetailnameid;
+                                globals.facefetchresulturl = detailsofface;
+                              FaceDetailsList().load(FacesDetails.all).then((faceFound) => {
+                                setState(() => {
+                                  _faceFound = faceFound,
+                                _previewDetailsFrontAlert(context)
+
+
+                                })
+                              });
+                            });
+
+                            },
+                            child:  Padding(
+                              padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                              child:  Container(
+                                            height: 70,
+                                            decoration: BoxDecoration(
+                                            color: Color(0xFF000000),
+                                            borderRadius: BorderRadius.circular(20),
+                                            boxShadow: [
+                                            const BoxShadow(
+                                            color: Color(0xFFffffff),
+                                            offset: Offset(2, 2),
+                                            blurRadius: 10,
+                                            spreadRadius: 1,
+                                            ),
+                                            const BoxShadow(
+                                            color: Color(0xFFffffff),
+                                            offset: Offset(-2, -2),
+                                            blurRadius: 10,
+                                            spreadRadius: 1,
+                                            ),
+                                            ]
+                                            ),
+                                            child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                            Text( 'See details',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold) ),
+                                              SizedBox(
+                                                width: 20,
+                                              ),
+                                              Container(
+                                                height: 70,
+                                                width: 70,
+                                                child:
+                                                Lottie.asset('assets/json/animation.json',height: MediaQuery.of(context).size.height,width: MediaQuery.of(context).size.width,fit:BoxFit.cover),
+                                              ),
+                                            //Lottie.asset('assets/json/animation.json'),
+                                            ],
+                                            ),
+                                            )
+                                            // Text( 'See details',style: GoogleFonts.gruppo(fontSize: 18,color: Colors.white,fontWeight: FontWeight.bold) )
+                                            )
+                                            ),
+
+                      ]
+                    ),
+
+
+                            )
+                ],
+              ),
+
+
+            ],
+          ),
+        )
+
+    );
+
+    // show the dialog
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
+  _previewDetailsFrontAlert(BuildContext context) {
+
+    // textfield for url
+    // set up the buttons
+    final decodestring = base64Decode('$imageofface'
+        .split(',')
+        .last);
+    Uint8List encodeedimg = decodestring;
+
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title:  Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            GestureDetector(
+              onTap: () {
+
+                print('cross clicked');
+                setState(() {
+                  globals.facedetailnameid='';
+                  Navigator.pop(context);
+                });
+
+              },
+              child:
+              Icon(Icons.cancel,color: Colors.white,size: 40,),
+            )
+          ],
+        ),
+
+        content: Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          decoration: BoxDecoration(
+              color: Color(0xFFE000000),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                const BoxShadow(
+                  color: Color(0xFFffffff),
+                  offset: Offset(2, 2),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                ),
+                const BoxShadow(
+                  color: Color(0xFFffffff),
+                  offset: Offset(-2, -2),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                ),
+              ]
+          ),
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                child: Container(
+                  // height: 100,
+                  child:  Align(
+                    alignment: Alignment.center,
+                    child: Container(
+
+                      child: Text('Face Details',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ),
+              ),
+
+
+
+
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    height: 400,
+                    child: Column(
+                        children: [
+
+                          ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: _faceFound.length,
+                            itemBuilder: _buildItemsForListView,
+                          ),
+                        ]
+                    ),
+
+
                   )
                 ],
               ),
@@ -617,7 +883,7 @@ class _backcameraState extends State<backCamera>{
           child:  Scaffold(
             appBar: AppBar(
 
-              title: Text('Back Camera Screen',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
+              title: AutoSizeText('Back Camera Screen',style: GoogleFonts.gruppo(fontSize: 28,color: Colors.white,fontWeight: FontWeight.bold)),
               leading: IconButton(
                 icon: Icon(Icons.arrow_back, color: Colors.white),
                 onPressed: () => Navigator.of(context).pop(),

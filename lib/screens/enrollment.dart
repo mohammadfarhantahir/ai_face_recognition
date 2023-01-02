@@ -130,16 +130,26 @@ class _enrollmentState extends State<enrollment>{
     }
   }
   late var result;
+
+
+
+
   void facecapture(){
+
+
+
     Regula.FaceSDK.presentFaceCaptureActivity().then((result) =>
         setImage(
             globals.first,
             base64Decode(Regula.FaceCaptureResponse.fromJson(
-                json.decode(result))!
+                json.decode(result)
+            )!
                 .image!
                 .bitmap!
-                .replaceAll("\n", "")),
-            Regula.ImageType.LIVE));
+                .replaceAll("\n", "")
+            ),
+            Regula.ImageType.LIVE)
+    );
     imageFilenew= json.decode(result);
     globals.first=true;
     print('image value -------'+imageFilenew);
@@ -311,7 +321,7 @@ class _enrollmentState extends State<enrollment>{
         print('can regsiterd this face on server');
 
         setState(() {
-          uploadImagefacerec(globals.filepaths, uploadUrlfacereco, context);
+
         });
 
 
@@ -350,17 +360,28 @@ class _enrollmentState extends State<enrollment>{
 
   late final String uploadUrlfacereco = 'http://'+globals.readIPURL!+':5000/api/recognize';
   Future<String?> uploadImagefacerec(filepath, url,BuildContext context) async {
+    var headers = {
+      'Access-Control-Allow-Methods', 'PUT,POST,PATCH,DELETE,GET'
 
+
+    };
     // showAlertDialogserverresponsewait(context);
     var request = http.MultipartRequest('POST', Uri.parse(url));
+
     request.files.add(await http.MultipartFile.fromPath('image', filepath));
     var res = await request.send();
     var responseBytes = await res.stream.toBytes();
     var responseString = utf8.decode(responseBytes);
     resdata = responseString.toString();
     _rere = resdata;
-    print(resdata.toString());
+    print('------>'+request.toString());
     Map<String, dynamic> data = jsonDecode(_rere);
+    if(resdata=='<!DOCTYPE html><html lang=en><meta charset=UTF-8><title>⚠️ 500 — Internal Server Error</title>'){
+      print('no face dound in tis image');
+    }
+    else{
+      print('not working');
+    }
 
     String s = data["Name"].toString().replaceAll("[", "").replaceAll(']', '');
     if(s.isEmpty){
@@ -407,7 +428,7 @@ class _enrollmentState extends State<enrollment>{
         facestatusknownUnknow = true;
         print('face found');
         enrollmentStatus = true;
-
+        buttoncount = 0;
         dialogAlertsEnrollmentFacefound(context);
         facestatusknownUnknow = true;
       }
@@ -658,6 +679,7 @@ class _enrollmentState extends State<enrollment>{
                          child: GestureDetector(
                            onTap: () {
                              globals.first=true;
+
                              facecapture();
                              print('camera clicekd');
                            },
@@ -849,7 +871,7 @@ class _enrollmentState extends State<enrollment>{
                           print(globals.storefoldername);
                           if(buttoncount==1){
                             if(nameController.text.isNotEmpty){
-                              uploadImagefacedetection(globals.filepaths,uploadUrlfacedetection,context);
+                              uploadImagefacerec(globals.filepaths, uploadUrlfacereco, context);
 
 
                             }

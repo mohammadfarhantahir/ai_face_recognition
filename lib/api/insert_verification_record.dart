@@ -12,7 +12,7 @@ Future insertVerificationRecord(BuildContext context,uId,time,date) async{
 
 
   // API URL
-  var url = 'http://face.ladang.tech/face-recognition-webservice-master/insertverificationrecord.php';
+  var url = 'http://'+globals.readIPURL!+'/face-recognition-webservice-master/insertverificationrecord.php';
 
 
     // Store all data with Param Name.
