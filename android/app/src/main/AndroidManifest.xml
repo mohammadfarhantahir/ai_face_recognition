@@ -12,10 +12,17 @@
     <uses-feature android:name="android.hardware.camera2" android:required="false" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
     <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
+    <uses-permission android:name="android.permission.NFC" />
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
    <application
-        android:label="ai_face"
+        android:label="SWIMS-BIO"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -44,8 +51,11 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+       <meta-data android:name="com.google.android.geo.API_KEY"
+           android:value="AIzaSyAZPl0U2Gd6RHWu97gWAZbgDYdDcEbdNjE"/>
     </application>
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true"/>
+
 </manifest>

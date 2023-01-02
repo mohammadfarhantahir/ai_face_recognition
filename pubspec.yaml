@@ -49,6 +49,17 @@ dependencies:
   shared_preferences:
   connectivity_plus:
   permission_handler:
+  google_maps_flutter:
+  camera_web:
+  syncfusion_flutter_pdf:
+  open_file:
+  auto_size_text:
+  lottie:
+  flutter_tts:
+  shimmer:
+  sticky_headers:
+  provider:
+
 
 dev_dependencies:
   flutter_test:
@@ -76,6 +87,22 @@ flutter:
   assets:
       - assets/images/main.jpg
       - assets/images/loading.gif
+      - assets/pdf/garland.svg
+      - assets/pdf/medail.svg
+      - assets/pdf/swirls.svg
+      - assets/pdf/swirls1.svg
+      - assets/pdf/swirls2.svg
+      - assets/pdf/swirls3.svg
+      - assets/images/background.png
+      - assets/images/background.jpg
+      - assets/images/card.png
+      - assets/images/flag.png
+      - assets/images/sign.png
+      - assets/images/flagg.png
+      - assets/images/flaggg.png
+      - assets/images/circle_glowing.gif
+      - assets/json/animation.json
+      - assets/images/arrow_down.gif
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

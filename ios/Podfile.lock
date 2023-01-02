@@ -1,14 +1,22 @@
 PODS:
   - camera_avfoundation (0.0.1):
     - Flutter
-  - FaceSDK (4.1.1153):
-    - RegulaCommon (= 6.5.166)
+  - connectivity_plus (0.0.1):
+    - Flutter
+    - ReachabilitySwift
+  - FaceSDK (4.1.1217):
+    - RegulaCommon (= 6.6.203)
   - Flutter (1.0.0)
   - flutter_exif_rotation (0.3.0):
     - Flutter
-  - flutter_face_api_beta (0.0.75):
-    - FaceSDK (= 4.1.1153)
+  - flutter_face_api_beta (0.0.76):
+    - FaceSDK (= 4.1.1217)
     - Flutter
+  - flutter_tts (0.0.1):
+    - Flutter
+  - google_maps_flutter_ios (0.0.1):
+    - Flutter
+    - GoogleMaps
   - google_mlkit_commons (0.2.0):
     - Flutter
     - MLKitVision
@@ -20,6 +28,11 @@ PODS:
     - GoogleUtilities/Environment (~> 7.7)
     - nanopb (< 2.30910.0, >= 2.30908.0)
     - PromisesObjC (< 3.0, >= 1.2)
+  - GoogleMaps (5.2.0):
+    - GoogleMaps/Maps (= 5.2.0)
+  - GoogleMaps/Base (5.2.0)
+  - GoogleMaps/Maps (5.2.0):
+    - GoogleMaps/Base
   - GoogleMLKit/FaceDetection (3.2.0):
     - GoogleMLKit/MLKitCore
     - MLKitFaceDetection (~> 2.2.0)
@@ -37,11 +50,11 @@ PODS:
     - GoogleToolboxForMac/Defines (= 2.3.2)
     - "GoogleToolboxForMac/NSString+URLArguments (= 2.3.2)"
   - "GoogleToolboxForMac/NSString+URLArguments (2.3.2)"
-  - GoogleUtilities/Environment (7.7.0):
+  - GoogleUtilities/Environment (7.10.0):
     - PromisesObjC (< 3.0, >= 1.2)
-  - GoogleUtilities/Logger (7.7.0):
+  - GoogleUtilities/Logger (7.10.0):
     - GoogleUtilities/Environment
-  - GoogleUtilities/UserDefaults (7.7.0):
+  - GoogleUtilities/UserDefaults (7.10.0):
     - GoogleUtilities/Logger
   - GoogleUtilitiesComponents (1.1.0):
     - GoogleUtilities/Logger
@@ -73,26 +86,40 @@ PODS:
     - nanopb/encode (= 2.30909.0)
   - nanopb/decode (2.30909.0)
   - nanopb/encode (2.30909.0)
+  - open_file (0.0.1):
+    - Flutter
   - path_provider_ios (0.0.1):
     - Flutter
+  - permission_handler_apple (9.0.4):
+    - Flutter
   - PromisesObjC (2.1.1)
-  - Protobuf (3.21.5)
-  - RegulaCommon (6.5.166)
+  - Protobuf (3.21.12)
+  - ReachabilitySwift (5.0.0)
+  - RegulaCommon (6.6.203)
+  - shared_preferences_ios (0.0.1):
+    - Flutter
 
 DEPENDENCIES:
   - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
+  - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
   - Flutter (from `Flutter`)
   - flutter_exif_rotation (from `.symlinks/plugins/flutter_exif_rotation/ios`)
   - flutter_face_api_beta (from `.symlinks/plugins/flutter_face_api_beta/ios`)
+  - flutter_tts (from `.symlinks/plugins/flutter_tts/ios`)
+  - google_maps_flutter_ios (from `.symlinks/plugins/google_maps_flutter_ios/ios`)
   - google_mlkit_commons (from `.symlinks/plugins/google_mlkit_commons/ios`)
   - google_mlkit_face_detection (from `.symlinks/plugins/google_mlkit_face_detection/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
+  - open_file (from `.symlinks/plugins/open_file/ios`)
   - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - shared_preferences_ios (from `.symlinks/plugins/shared_preferences_ios/ios`)
 
 SPEC REPOS:
   trunk:
     - FaceSDK
     - GoogleDataTransport
+    - GoogleMaps
     - GoogleMLKit
     - GoogleToolboxForMac
     - GoogleUtilities
@@ -105,38 +132,55 @@ SPEC REPOS:
     - nanopb
     - PromisesObjC
     - Protobuf
+    - ReachabilitySwift
     - RegulaCommon
 
 EXTERNAL SOURCES:
   camera_avfoundation:
     :path: ".symlinks/plugins/camera_avfoundation/ios"
+  connectivity_plus:
+    :path: ".symlinks/plugins/connectivity_plus/ios"
   Flutter:
     :path: Flutter
   flutter_exif_rotation:
     :path: ".symlinks/plugins/flutter_exif_rotation/ios"
   flutter_face_api_beta:
     :path: ".symlinks/plugins/flutter_face_api_beta/ios"
+  flutter_tts:
+    :path: ".symlinks/plugins/flutter_tts/ios"
+  google_maps_flutter_ios:
+    :path: ".symlinks/plugins/google_maps_flutter_ios/ios"
   google_mlkit_commons:
     :path: ".symlinks/plugins/google_mlkit_commons/ios"
   google_mlkit_face_detection:
     :path: ".symlinks/plugins/google_mlkit_face_detection/ios"
   image_picker_ios:
     :path: ".symlinks/plugins/image_picker_ios/ios"
+  open_file:
+    :path: ".symlinks/plugins/open_file/ios"
   path_provider_ios:
     :path: ".symlinks/plugins/path_provider_ios/ios"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
+  shared_preferences_ios:
+    :path: ".symlinks/plugins/shared_preferences_ios/ios"
 
 SPEC CHECKSUMS:
   camera_avfoundation: 07c77549ea54ad95d8581be86617c094a46280d9
-  FaceSDK: fafdffe8eeae71acb820c286538152cb3080dea6
+  connectivity_plus: 413a8857dd5d9f1c399a39130850d02fe0feaf7e
+  FaceSDK: b62d5cefa0b62241be52f9874479b07bf506e8f8
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
   flutter_exif_rotation: de6b54e8bd54a687f28d6397d1a890391de41111
-  flutter_face_api_beta: beb317161a95916f038548a40c34ccaa8d2df621
+  flutter_face_api_beta: 133380b74892bab99664a07c0674f855e82bbe4d
+  flutter_tts: 0f492aab6accf87059b72354fcb4ba934304771d
+  google_maps_flutter_ios: 66201f392bf62d500f07670a30488a247b9bb5b9
   google_mlkit_commons: e9070f57232c3a3e4bd42fdfa621bb1f4bb3e709
   google_mlkit_face_detection: ab4c98846c4e9b0d48e5bd386cedb14feb676802
   GoogleDataTransport: 1c8145da7117bd68bbbed00cf304edb6a24de00f
+  GoogleMaps: 025272d5876d3b32604e5c080dc25eaf68764693
   GoogleMLKit: 0017a6a8372e1a182139b9def4d89be5d87ca5a7
   GoogleToolboxForMac: 8bef7c7c5cf7291c687cf5354f39f9db6399ad34
-  GoogleUtilities: e0913149f6b0625b553d70dae12b49fc62914fd1
+  GoogleUtilities: bad72cb363809015b1f7f19beb1f1cd23c589f95
   GoogleUtilitiesComponents: 679b2c881db3b615a2777504623df6122dd20afe
   GTMSessionFetcher: 5595ec75acf5be50814f81e9189490412bad82ba
   image_picker_ios: b786a5dcf033a8336a657191401bfdf12017dabb
@@ -145,10 +189,14 @@ SPEC CHECKSUMS:
   MLKitFaceDetection: 9f29d8d0bb38911281407e24e74d2e5da812ba8d
   MLKitVision: 96c96571190b7f63eddf4a12068ce8a8689e0d2c
   nanopb: b552cce312b6c8484180ef47159bc0f65a1f0431
+  open_file: 02eb5cb6b21264bd3a696876f5afbfb7ca4f4b7d
   path_provider_ios: 14f3d2fd28c4fdb42f44e0f751d12861c43cee02
+  permission_handler_apple: 44366e37eaf29454a1e7b1b7d736c2cceaeb17ce
   PromisesObjC: ab77feca74fa2823e7af4249b8326368e61014cb
-  Protobuf: 7504b04fffcf6662ad629694db8231f5e744327f
-  RegulaCommon: 149b3792b364d5e8fd3b8cc1dfe3d232a495e3cd
+  Protobuf: 120350fc38646e2dedc26f49ecba778184ea1de2
+  ReachabilitySwift: 985039c6f7b23a1da463388634119492ff86c825
+  RegulaCommon: 5a2b9c9c24f45451532ee074e52a1450e328bd38
+  shared_preferences_ios: 548a61f8053b9b8a49ac19c1ffbc8b92c50d68ad
 
 PODFILE CHECKSUM: ef19549a9bc3046e7bb7d2fab4d021637c0c58a3
 

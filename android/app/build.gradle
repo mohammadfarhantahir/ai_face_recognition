@@ -26,7 +26,7 @@ apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
-    compileSdkVersion flutter.compileSdkVersion
+    compileSdkVersion 33
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -55,6 +55,7 @@ android {
 
     buildTypes {
         release {
+            aaptOptions { cruncherEnabled = false }
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.debug
@@ -71,7 +72,12 @@ android {
 flutter {
     source '../..'
 }
-
+android {
+    defaultConfig {
+        minSdkVersion 23
+        multiDexEnabled true
+    }
+}
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }

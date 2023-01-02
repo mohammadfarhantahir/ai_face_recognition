@@ -56,6 +56,11 @@
      	<string>This app needs access to camera when used</string>
      	<key>NSMicrophoneUsageDescription</key>
      	<string>This app needs access to microphone when used</string>
-
+ <key>NSPhotoLibraryUsageDescription</key>
+    <string>Please grant photo gallery access</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Please grant camera access</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Please grant microphone access</string>
 </dict>
 </plist>
